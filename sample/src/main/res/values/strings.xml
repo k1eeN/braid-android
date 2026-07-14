@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Braid</string>
+    <string name="item_selected">Selected: %1$s</string>
 </resources>
