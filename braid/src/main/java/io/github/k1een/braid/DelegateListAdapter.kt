@@ -5,16 +5,17 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
 /**
- * AndroidX [ListAdapter] that delegates item rendering and diffing to [registry].
+ * AndroidX [ListAdapter] that delegates item rendering and diffing to a
+ * [DelegateRegistry].
  *
  * The adapter relies on the standard `ListAdapter` list storage, `submitList`,
  * and asynchronous diff calculation. It does not keep a separate item list.
  *
  * @param Item item type stored by this adapter.
- * @property registry immutable registry used for all adapter routing.
+ * @param registry immutable registry used internally for adapter routing.
  */
 public class DelegateListAdapter<Item : Any>(
-    public val registry: DelegateRegistry<Item>,
+    private val registry: DelegateRegistry<Item>,
 ) : ListAdapter<Item, RecyclerView.ViewHolder>(DelegateItemCallback(registry)) {
 
     /** Returns the registry view type for the item at [position]. */
