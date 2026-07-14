@@ -6,7 +6,7 @@ android {
     namespace = "io.github.k1een.braid"
 
     compileSdk {
-        version = release(37)
+        version = release(35)
     }
 
     defaultConfig {
