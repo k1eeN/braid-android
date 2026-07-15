@@ -7,21 +7,25 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import io.github.k1een.braid.DelegateListAdapter
-import io.github.k1een.braid.DelegateRegistry
+import io.github.k1een.braid.braidListAdapter
 import io.github.k1een.braid.sample.databinding.ActivityMainBinding
+import io.github.k1een.braid.sample.databinding.ItemSampleBinding
 import io.github.k1een.braid.sample.list.SampleItem
-import io.github.k1een.braid.sample.list.SampleItemDelegate
 
 class MainActivity : AppCompatActivity() {
 
-    private val adapter = DelegateListAdapter(
-        registry = DelegateRegistry<SampleItem>(
-            delegates = listOf(
-                SampleItemDelegate(::onItemClick),
-            ),
-        ),
-    )
+    private val adapter = braidListAdapter<SampleItem> {
+        viewBinding(
+            inflate = ItemSampleBinding::inflate,
+            keySelector = SampleItem::id,
+        ) { item ->
+            tvTitle.text = item.title
+            tvDescription.text = item.description
+            root.setOnClickListener {
+                onItemClick(item)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
