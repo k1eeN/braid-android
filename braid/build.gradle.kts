@@ -8,17 +8,13 @@ plugins {
 android {
     namespace = "io.github.k1een.braid"
 
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 23
 
         testInstrumentationRunner =
             "androidx.test.runner.AndroidJUnitRunner"
-
-        aarMetadata {
-            minCompileSdk = 35
-        }
     }
 
     buildFeatures {
