@@ -1,0 +1,85 @@
+public abstract class io/github/k1een/braid/AdapterDelegate {
+	public fun <init> ()V
+	public fun areContentsTheSame (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public abstract fun areItemsTheSame (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public abstract fun bindViewHolder (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;Ljava/lang/Object;Ljava/util/List;)V
+	public abstract fun createViewHolder (Landroid/view/ViewGroup;)Landroidx/recyclerview/widget/RecyclerView$ViewHolder;
+	public fun getChangePayload (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun isForItem (Ljava/lang/Object;)Z
+	public fun onFailedToRecycleView (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)Z
+	public fun onViewAttachedToWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+	public fun onViewDetachedFromWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+	public fun onViewRecycled (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+}
+
+public final class io/github/k1een/braid/BraidListAdapterKt {
+	public static final fun braidListAdapter (Lkotlin/jvm/functions/Function1;)Lio/github/k1een/braid/DelegateListAdapter;
+	public static final fun braidListAdapter ([Lio/github/k1een/braid/AdapterDelegate;)Lio/github/k1een/braid/DelegateListAdapter;
+}
+
+public final class io/github/k1een/braid/BraidListAdapterScope {
+	public final fun delegate (Lio/github/k1een/braid/AdapterDelegate;)V
+}
+
+public final class io/github/k1een/braid/DelegateListAdapter : androidx/recyclerview/widget/ListAdapter {
+	public fun <init> (Lio/github/k1een/braid/DelegateRegistry;)V
+	public fun getItemViewType (I)I
+	public fun onBindViewHolder (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;I)V
+	public fun onBindViewHolder (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;ILjava/util/List;)V
+	public fun onCreateViewHolder (Landroid/view/ViewGroup;I)Landroidx/recyclerview/widget/RecyclerView$ViewHolder;
+	public fun onFailedToRecycleView (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)Z
+	public fun onViewAttachedToWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+	public fun onViewDetachedFromWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+	public fun onViewRecycled (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+}
+
+public final class io/github/k1een/braid/DelegateRegistry {
+	public fun <init> (Ljava/util/List;)V
+}
+
+public final class io/github/k1een/braid/LambdaStatefulViewBindingDelegateKt {
+	public static final fun createStatefulViewBindingDelegate (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)Lio/github/k1een/braid/AdapterDelegate;
+}
+
+public final class io/github/k1een/braid/LambdaViewBindingDelegateKt {
+	public static final fun createViewBindingDelegate (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;)Lio/github/k1een/braid/AdapterDelegate;
+}
+
+public abstract class io/github/k1een/braid/StatefulViewBindingDelegate : io/github/k1een/braid/AdapterDelegate {
+	public fun <init> (Lkotlin/jvm/functions/Function3;)V
+	protected fun attachedToWindow (Landroidx/viewbinding/ViewBinding;Ljava/lang/Object;)V
+	protected abstract fun bind (Landroidx/viewbinding/ViewBinding;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/List;)V
+	public synthetic fun bindViewHolder (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;Ljava/lang/Object;Ljava/util/List;)V
+	public final fun bindViewHolder (Lio/github/k1een/braid/StatefulViewBindingViewHolder;Ljava/lang/Object;Ljava/util/List;)V
+	protected abstract fun createState (Landroidx/viewbinding/ViewBinding;)Ljava/lang/Object;
+	public synthetic fun createViewHolder (Landroid/view/ViewGroup;)Landroidx/recyclerview/widget/RecyclerView$ViewHolder;
+	public final fun createViewHolder (Landroid/view/ViewGroup;)Lio/github/k1een/braid/StatefulViewBindingViewHolder;
+	protected fun detachedFromWindow (Landroidx/viewbinding/ViewBinding;Ljava/lang/Object;)V
+	protected fun failedToRecycle (Landroidx/viewbinding/ViewBinding;Ljava/lang/Object;)Z
+	public synthetic fun onFailedToRecycleView (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)Z
+	public final fun onFailedToRecycleView (Lio/github/k1een/braid/StatefulViewBindingViewHolder;)Z
+	public synthetic fun onViewAttachedToWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+	public final fun onViewAttachedToWindow (Lio/github/k1een/braid/StatefulViewBindingViewHolder;)V
+	public synthetic fun onViewDetachedFromWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+	public final fun onViewDetachedFromWindow (Lio/github/k1een/braid/StatefulViewBindingViewHolder;)V
+	public synthetic fun onViewRecycled (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+	public final fun onViewRecycled (Lio/github/k1een/braid/StatefulViewBindingViewHolder;)V
+	protected fun recycle (Landroidx/viewbinding/ViewBinding;Ljava/lang/Object;)V
+}
+
+public final class io/github/k1een/braid/StatefulViewBindingViewHolder : androidx/recyclerview/widget/RecyclerView$ViewHolder {
+}
+
+public abstract class io/github/k1een/braid/ViewBindingDelegate : io/github/k1een/braid/AdapterDelegate {
+	public fun <init> (Lkotlin/jvm/functions/Function3;)V
+	protected abstract fun bind (Landroidx/viewbinding/ViewBinding;Ljava/lang/Object;Ljava/util/List;)V
+	public synthetic fun bindViewHolder (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;Ljava/lang/Object;Ljava/util/List;)V
+	public final fun bindViewHolder (Lio/github/k1een/braid/ViewBindingViewHolder;Ljava/lang/Object;Ljava/util/List;)V
+	public synthetic fun createViewHolder (Landroid/view/ViewGroup;)Landroidx/recyclerview/widget/RecyclerView$ViewHolder;
+	public final fun createViewHolder (Landroid/view/ViewGroup;)Lio/github/k1een/braid/ViewBindingViewHolder;
+}
+
+public final class io/github/k1een/braid/ViewBindingViewHolder : androidx/recyclerview/widget/RecyclerView$ViewHolder {
+	public final fun getBinding ()Landroidx/viewbinding/ViewBinding;
+}
+
