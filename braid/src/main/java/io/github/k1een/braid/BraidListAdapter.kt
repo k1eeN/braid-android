@@ -10,11 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
  *
  * The adapter relies on the standard `ListAdapter` list storage, `submitList`,
  * and asynchronous diff calculation. It does not keep a separate item list.
+ * Create instances with [braidListAdapter].
  *
  * @param Item item type stored by this adapter.
  * @param registry immutable registry used internally for adapter routing.
  */
-public class BraidListAdapter<Item : Any>(
+public class BraidListAdapter<Item : Any> internal constructor(
     private val registry: DelegateRegistry<Item>,
 ) : ListAdapter<Item, RecyclerView.ViewHolder>(registry.itemCallback) {
 

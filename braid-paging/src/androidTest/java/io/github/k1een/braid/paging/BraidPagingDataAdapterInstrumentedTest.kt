@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.k1een.braid.AdapterDelegate
-import io.github.k1een.braid.braidDelegateRegistry
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.FutureTask
@@ -482,13 +481,13 @@ private fun pagingFixture(
 ): PagingFixture {
     val firstDelegate = FirstPagingDelegate(firstFailedToRecycle)
     val secondDelegate = SecondPagingDelegate()
-    val registry = braidDelegateRegistry<PagingInstrumentedItem>(
-        firstDelegate,
-        secondDelegate,
-    )
-
     return PagingFixture(
-        adapter = onMainThread { BraidPagingDataAdapter(registry) },
+        adapter = onMainThread {
+            braidPagingDataAdapter(
+                firstDelegate,
+                secondDelegate,
+            )
+        },
         firstDelegate = firstDelegate,
         secondDelegate = secondDelegate,
     )

@@ -9,12 +9,15 @@ import androidx.recyclerview.widget.RecyclerView
  *
  * Every item must match exactly one delegate. View types are zero-based and
  * follow the order of [delegates]. The input list is copied during construction.
+ * Regular consumers create registries with [braidDelegateRegistry]. The public
+ * routing methods are intended for advanced adapter integrations that need to
+ * share this registry's diff and delegate routing rules.
  *
  * @param BaseItem common item type used by the adapter.
  * @param delegates delegates available to the adapter.
  * @throws IllegalArgumentException when [delegates] is empty.
  */
-public class DelegateRegistry<BaseItem : Any>(
+public class DelegateRegistry<BaseItem : Any> internal constructor(
     delegates: List<AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>>,
 ) {
 

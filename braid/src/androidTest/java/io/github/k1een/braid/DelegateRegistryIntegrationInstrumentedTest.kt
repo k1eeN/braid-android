@@ -20,10 +20,9 @@ class DelegateRegistryIntegrationInstrumentedTest {
     fun publicIntegrationApiRoutesCreationBindingAndLifecycle() = onMainThread {
         val delegate = RegistryIntegrationDelegate()
         val registry = braidDelegateRegistry<RegistryIntegrationItem>(delegate)
-        val adapter = BraidListAdapter(registry)
         val item = RegistryIntegrationItem(id = 1L)
         val viewType = registry.viewTypeFor(item)
-        val holder = adapter.createViewHolder(parent(), viewType)
+        val holder = registry.createViewHolder(parent(), viewType)
         val payloads = listOf<Any>(Any())
 
         registry.bindViewHolder(holder, item, payloads)
