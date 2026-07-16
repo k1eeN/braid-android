@@ -4,10 +4,7 @@ import android.view.ViewGroup
 import androidx.paging.PagingConfig
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView
-import io.github.k1een.braid.AdapterDelegate
-import io.github.k1een.braid.BraidAdapterScope
 import io.github.k1een.braid.DelegateRegistry
-import io.github.k1een.braid.braidDelegateRegistry
 
 /**
  * AndroidX [PagingDataAdapter] that delegates rendering and diffing through a
@@ -16,12 +13,13 @@ import io.github.k1een.braid.braidDelegateRegistry
  * This adapter intentionally does not support null Paging placeholders. Its
  * [PagingConfig] must use enablePlaceholders = false. Paging submission,
  * refresh, retry, snapshots, load states, and load-state adapter composition
- * remain the standard inherited Paging APIs.
+ * remain the standard inherited Paging APIs. Create instances with
+ * [braidPagingDataAdapter].
  *
  * @param Item non-null item type presented by Paging.
  * @param registry immutable registry used for diffing and view routing.
  */
-public class BraidPagingDataAdapter<Item : Any>(
+public class BraidPagingDataAdapter<Item : Any> internal constructor(
     private val registry: DelegateRegistry<Item>,
 ) : PagingDataAdapter<Item, RecyclerView.ViewHolder>(registry.itemCallback) {
 
@@ -100,37 +98,6 @@ public class BraidPagingDataAdapter<Item : Any>(
         return delegateResult || adapterResult
     }
 }
-
-/**
- * Creates a [BraidPagingDataAdapter] from existing [delegates].
- *
- * Configure the associated Pager with
- * PagingConfig(enablePlaceholders = false).
- */
-public fun <Item : Any> braidPagingDataAdapter(
-    vararg delegates: AdapterDelegate<
-        Item,
-        out Item,
-        out RecyclerView.ViewHolder,
-    >,
-): BraidPagingDataAdapter<Item> = BraidPagingDataAdapter(
-    registry = braidDelegateRegistry(*delegates),
-)
-
-/**
- * Creates a [BraidPagingDataAdapter] from delegates declared in [block].
- *
- * The [BraidAdapterScope] is used only during construction, and delegate order
- * is preserved in the immutable registry snapshot shared with the adapter.
- *
- * Configure the associated Pager with
- * PagingConfig(enablePlaceholders = false).
- */
-public fun <Item : Any> braidPagingDataAdapter(
-    block: BraidAdapterScope<Item>.() -> Unit,
-): BraidPagingDataAdapter<Item> = BraidPagingDataAdapter(
-    registry = braidDelegateRegistry(block),
-)
 
 internal fun <Item : Any> requirePresentedItem(
     item: Item?,

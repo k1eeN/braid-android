@@ -4,31 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 
-@PublishedApi
-internal fun <
-    BaseItem : Any,
-    Item : BaseItem,
-    VB : ViewBinding,
-    Key,
-> createViewBindingDelegate(
-    inflate: (LayoutInflater, ViewGroup, Boolean) -> VB,
-    matcher: (BaseItem) -> Boolean,
-    keySelector: (Item) -> Key,
-    contentComparator: (Item, Item) -> Boolean,
-    payloadProvider: (Item, Item) -> Any?,
-    payloadBinder: (VB.(Item, List<Any>) -> Unit)?,
-    fullBinder: VB.(Item) -> Unit,
-): AdapterDelegate<BaseItem, Item, ViewBindingViewHolder<VB>> =
-    LambdaViewBindingDelegate(
-        inflate = inflate,
-        matcher = matcher,
-        keySelector = keySelector,
-        contentComparator = contentComparator,
-        payloadProvider = payloadProvider,
-        payloadBinder = payloadBinder,
-        fullBinder = fullBinder,
-    )
-
 internal class LambdaViewBindingDelegate<
     BaseItem : Any,
     Item : BaseItem,

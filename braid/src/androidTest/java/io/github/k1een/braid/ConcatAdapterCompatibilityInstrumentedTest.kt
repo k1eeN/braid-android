@@ -258,13 +258,13 @@ private fun concatFixture(
 ): ConcatFixture {
     val firstDelegate = FirstConcatDelegate(firstFailedToRecycle)
     val secondDelegate = SecondConcatDelegate()
-    val registry = braidDelegateRegistry<ConcatItem>(
-        firstDelegate,
-        secondDelegate,
-    )
-
     return ConcatFixture(
-        adapter = onMainThread { BraidListAdapter(registry) },
+        adapter = onMainThread {
+            braidListAdapter(
+                firstDelegate,
+                secondDelegate,
+            )
+        },
         firstDelegate = firstDelegate,
         secondDelegate = secondDelegate,
     )

@@ -1,5 +1,9 @@
+public final class io/github/k1een/braid/paging/BraidPagingAdapters {
+	public static final fun braidPagingDataAdapter (Lkotlin/jvm/functions/Function1;)Lio/github/k1een/braid/paging/BraidPagingDataAdapter;
+	public static final fun braidPagingDataAdapter ([Lio/github/k1een/braid/AdapterDelegate;)Lio/github/k1een/braid/paging/BraidPagingDataAdapter;
+}
+
 public final class io/github/k1een/braid/paging/BraidPagingDataAdapter : androidx/paging/PagingDataAdapter {
-	public fun <init> (Lio/github/k1een/braid/DelegateRegistry;)V
 	public fun getItemViewType (I)I
 	public fun onBindViewHolder (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;I)V
 	public fun onBindViewHolder (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;ILjava/util/List;)V
@@ -8,10 +12,5 @@ public final class io/github/k1een/braid/paging/BraidPagingDataAdapter : android
 	public fun onViewAttachedToWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
 	public fun onViewDetachedFromWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
 	public fun onViewRecycled (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
-}
-
-public final class io/github/k1een/braid/paging/BraidPagingDataAdapterKt {
-	public static final fun braidPagingDataAdapter (Lkotlin/jvm/functions/Function1;)Lio/github/k1een/braid/paging/BraidPagingDataAdapter;
-	public static final fun braidPagingDataAdapter ([Lio/github/k1een/braid/AdapterDelegate;)Lio/github/k1een/braid/paging/BraidPagingDataAdapter;
 }
 
