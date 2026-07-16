@@ -49,7 +49,7 @@ class DelegateRegistryTest {
         val firstDelegate = FirstDelegate()
         val catchAllDelegate = CatchAllDelegate()
         val registry = DelegateRegistry<RegistryItem>(
-            listOf(firstDelegate, catchAllDelegate),
+            listOf(firstDelegate, catchAllDelegate)
         )
 
         val item = FirstItem(id = 1L)
@@ -68,10 +68,10 @@ class DelegateRegistryTest {
         val firstDelegate = FirstDelegate()
         val secondDelegate = SecondDelegate()
         val forwardRegistry = DelegateRegistry<RegistryItem>(
-            listOf(firstDelegate, secondDelegate),
+            listOf(firstDelegate, secondDelegate)
         )
         val reverseRegistry = DelegateRegistry<RegistryItem>(
-            listOf(secondDelegate, firstDelegate),
+            listOf(secondDelegate, firstDelegate)
         )
         val firstItem = FirstItem(id = 1L)
         val secondItem = SecondItem(id = 2L)
@@ -87,8 +87,8 @@ class DelegateRegistryTest {
     fun `registry keeps a defensive copy of delegates`() {
         val firstDelegate = FirstDelegate()
         val source = mutableListOf<
-            AdapterDelegate<RegistryItem, out RegistryItem, out RecyclerView.ViewHolder>,
-        >(firstDelegate)
+            AdapterDelegate<RegistryItem, out RegistryItem, out RecyclerView.ViewHolder>
+            >(firstDelegate)
         val registry = DelegateRegistry(source)
 
         source.clear()
@@ -128,30 +128,23 @@ private abstract class RegistryTestDelegate<Item : RegistryItem> :
     override fun createViewHolder(parent: ViewGroup): RecyclerView.ViewHolder =
         throw NotImplementedError("ViewHolder creation is not used by local unit tests.")
 
-    override fun bindViewHolder(
-        holder: RecyclerView.ViewHolder,
-        item: Item,
-        payloads: List<Any>,
-    ): Unit = Unit
+    override fun bindViewHolder(holder: RecyclerView.ViewHolder, item: Item, payloads: List<Any>): Unit = Unit
 }
 
 private class FirstDelegate : RegistryTestDelegate<FirstItem>() {
     override fun isForItem(item: RegistryItem): Boolean = item is FirstItem
 
-    override fun areItemsTheSame(oldItem: FirstItem, newItem: FirstItem): Boolean =
-        oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: FirstItem, newItem: FirstItem): Boolean = oldItem.id == newItem.id
 }
 
 private class SecondDelegate : RegistryTestDelegate<SecondItem>() {
     override fun isForItem(item: RegistryItem): Boolean = item is SecondItem
 
-    override fun areItemsTheSame(oldItem: SecondItem, newItem: SecondItem): Boolean =
-        oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: SecondItem, newItem: SecondItem): Boolean = oldItem.id == newItem.id
 }
 
 private class CatchAllDelegate : RegistryTestDelegate<RegistryItem>() {
     override fun isForItem(item: RegistryItem): Boolean = true
 
-    override fun areItemsTheSame(oldItem: RegistryItem, newItem: RegistryItem): Boolean =
-        oldItem == newItem
+    override fun areItemsTheSame(oldItem: RegistryItem, newItem: RegistryItem): Boolean = oldItem == newItem
 }

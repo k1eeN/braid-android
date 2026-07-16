@@ -19,46 +19,36 @@ import io.github.k1een.braid.DelegateRegistry
  * @param Item non-null item type presented by Paging.
  * @param registry immutable registry used for diffing and view routing.
  */
-public class BraidPagingDataAdapter<Item : Any> internal constructor(
-    private val registry: DelegateRegistry<Item>,
-) : PagingDataAdapter<Item, RecyclerView.ViewHolder>(registry.itemCallback) {
+public class BraidPagingDataAdapter<Item : Any> internal constructor(private val registry: DelegateRegistry<Item>) :
+    PagingDataAdapter<Item, RecyclerView.ViewHolder>(registry.itemCallback) {
 
     /** Resolves a presented item without triggering Paging prefetch. */
     override fun getItemViewType(position: Int): Int = registry.viewTypeFor(
         requirePresentedItem(
             item = peek(position),
-            position = position,
-        ),
+            position = position
+        )
     )
 
     /** Creates a holder through the delegate registered for [viewType]. */
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): RecyclerView.ViewHolder = registry.createViewHolder(parent, viewType)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
+        registry.createViewHolder(parent, viewType)
 
     /** Fully binds the accessed item and preserves Paging prefetch signaling. */
-    override fun onBindViewHolder(
-        holder: RecyclerView.ViewHolder,
-        position: Int,
-    ): Unit = registry.bindViewHolder(
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int): Unit = registry.bindViewHolder(
         holder = holder,
         item = requirePresentedItem(
             item = getItem(position),
-            position = position,
+            position = position
         ),
-        payloads = emptyList(),
+        payloads = emptyList()
     )
 
     /**
      * Partially binds with [payloads], or performs a full bind when they are
      * empty.
      */
-    override fun onBindViewHolder(
-        holder: RecyclerView.ViewHolder,
-        position: Int,
-        payloads: MutableList<Any>,
-    ) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: MutableList<Any>) {
         if (payloads.isEmpty()) {
             onBindViewHolder(holder, position)
         } else {
@@ -66,9 +56,9 @@ public class BraidPagingDataAdapter<Item : Any> internal constructor(
                 holder = holder,
                 item = requirePresentedItem(
                     item = getItem(position),
-                    position = position,
+                    position = position
                 ),
-                payloads = payloads,
+                payloads = payloads
             )
         }
     }
@@ -99,10 +89,7 @@ public class BraidPagingDataAdapter<Item : Any> internal constructor(
     }
 }
 
-internal fun <Item : Any> requirePresentedItem(
-    item: Item?,
-    position: Int,
-): Item = checkNotNull(item) {
+internal fun <Item : Any> requirePresentedItem(item: Item?, position: Int): Item = checkNotNull(item) {
     "BraidPagingDataAdapter does not support Paging placeholders. " +
         "Configure PagingConfig with enablePlaceholders = false. " +
         "Null item at position=$position."

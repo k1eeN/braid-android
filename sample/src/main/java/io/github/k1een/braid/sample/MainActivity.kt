@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     private val adapter = braidListAdapter(
         inflate = ItemSampleBinding::inflate,
-        keySelector = SampleItem::id,
+        keySelector = SampleItem::id
     ) { item ->
         tvTitle.text = item.title
         tvDescription.text = item.description
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(
             this,
             getString(R.string.item_selected, item.title),
-            Toast.LENGTH_SHORT,
+            Toast.LENGTH_SHORT
         ).show()
     }
 
@@ -62,23 +62,23 @@ class MainActivity : AppCompatActivity() {
             SampleItem(
                 id = 1L,
                 title = "ListAdapter foundation",
-                description = "Uses AndroidX ListAdapter for immutable list updates and async diffing.",
+                description = "Uses AndroidX ListAdapter for immutable list updates and async diffing."
             ),
             SampleItem(
                 id = 2L,
                 title = "Per-delegate diffing",
-                description = "Each delegate owns identity, content comparison, and payload rules.",
+                description = "Each delegate owns identity, content comparison, and payload rules."
             ),
             SampleItem(
                 id = 3L,
                 title = "Type-safe ViewBinding",
-                description = "Bindings and item types stay explicit from creation through bind.",
+                description = "Bindings and item types stay explicit from creation through bind."
             ),
             SampleItem(
                 id = 4L,
                 title = "Production diagnostics",
-                description = "Missing and conflicting delegate registrations fail with clear errors.",
-            ),
+                description = "Missing and conflicting delegate registrations fail with clear errors."
+            )
         )
     }
 }

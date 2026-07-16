@@ -9,33 +9,24 @@ import androidx.recyclerview.widget.RecyclerView
 import io.github.k1een.braid.sample.R
 import io.github.k1een.braid.sample.databinding.ItemPagingLoadStateBinding
 
-internal class PagingLoadStateAdapter(
-    private val retry: () -> Unit,
-) : LoadStateAdapter<PagingLoadStateAdapter.LoadStateViewHolder>() {
+internal class PagingLoadStateAdapter(private val retry: () -> Unit) :
+    LoadStateAdapter<PagingLoadStateAdapter.LoadStateViewHolder>() {
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        loadState: LoadState,
-    ): LoadStateViewHolder = LoadStateViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): LoadStateViewHolder = LoadStateViewHolder(
         binding = ItemPagingLoadStateBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
-            false,
+            false
         ),
-        retry = retry,
+        retry = retry
     )
 
-    override fun onBindViewHolder(
-        holder: LoadStateViewHolder,
-        loadState: LoadState,
-    ) {
+    override fun onBindViewHolder(holder: LoadStateViewHolder, loadState: LoadState) {
         holder.bind(loadState)
     }
 
-    internal class LoadStateViewHolder(
-        private val binding: ItemPagingLoadStateBinding,
-        retry: () -> Unit,
-    ) : RecyclerView.ViewHolder(binding.root) {
+    internal class LoadStateViewHolder(private val binding: ItemPagingLoadStateBinding, retry: () -> Unit) :
+        RecyclerView.ViewHolder(binding.root) {
 
         init {
             binding.btnRetry.setOnClickListener {

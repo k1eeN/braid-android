@@ -17,8 +17,8 @@ public fun <BaseItem : Any> braidDelegateRegistry(
     vararg delegates: AdapterDelegate<
         BaseItem,
         out BaseItem,
-        out RecyclerView.ViewHolder,
-    >,
+        out RecyclerView.ViewHolder
+        >
 ): DelegateRegistry<BaseItem> = DelegateRegistry(delegates.toList())
 
 /**
@@ -28,7 +28,7 @@ public fun <BaseItem : Any> braidDelegateRegistry(
  * defensive snapshot, and an empty block is rejected by [DelegateRegistry].
  */
 public fun <BaseItem : Any> braidDelegateRegistry(
-    block: BraidAdapterScope<BaseItem>.() -> Unit,
+    block: BraidAdapterScope<BaseItem>.() -> Unit
 ): DelegateRegistry<BaseItem> {
     val scope = BraidAdapterScope<BaseItem>()
     scope.block()
@@ -46,10 +46,10 @@ public fun <BaseItem : Any> braidListAdapter(
     vararg delegates: AdapterDelegate<
         BaseItem,
         out BaseItem,
-        out RecyclerView.ViewHolder,
-    >,
+        out RecyclerView.ViewHolder
+        >
 ): BraidListAdapter<BaseItem> = BraidListAdapter(
-    registry = braidDelegateRegistry(*delegates),
+    registry = braidDelegateRegistry(*delegates)
 )
 
 /**
@@ -60,9 +60,9 @@ public fun <BaseItem : Any> braidListAdapter(
  * delegate order is preserved in an immutable registry snapshot.
  */
 public fun <BaseItem : Any> braidListAdapter(
-    block: BraidAdapterScope<BaseItem>.() -> Unit,
+    block: BraidAdapterScope<BaseItem>.() -> Unit
 ): BraidListAdapter<BaseItem> = BraidListAdapter(
-    registry = braidDelegateRegistry(block),
+    registry = braidDelegateRegistry(block)
 )
 
 /**
@@ -74,12 +74,16 @@ public fun <BaseItem : Any> braidListAdapter(
  * diffing may run off the main thread. Use the block-based [braidListAdapter]
  * overload for lists with multiple item types. The adapter is created
  * immediately; this factory does not use lazy initialization.
+ *
+ * The factory mirrors the full diff and payload configuration without adding a
+ * separate builder object.
  */
+@Suppress("LongParameterList")
 public inline fun <
     reified Item : Any,
     VB : ViewBinding,
-    Key,
-> braidListAdapter(
+    Key
+    > braidListAdapter(
     noinline inflate: (LayoutInflater, ViewGroup, Boolean) -> VB,
     noinline keySelector: (Item) -> Key,
     noinline areContentsTheSame: (Item, Item) -> Boolean = { old, new ->
@@ -87,7 +91,7 @@ public inline fun <
     },
     noinline getChangePayload: (Item, Item) -> Any? = { _, _ -> null },
     noinline bindPayloads: (VB.(Item, List<Any>) -> Unit)? = null,
-    noinline bind: VB.(Item) -> Unit,
+    noinline bind: VB.(Item) -> Unit
 ): BraidListAdapter<Item> = braidListAdapter {
     viewBinding(
         inflate = inflate,
@@ -95,6 +99,6 @@ public inline fun <
         areContentsTheSame = areContentsTheSame,
         getChangePayload = getChangePayload,
         bindPayloads = bindPayloads,
-        bind = bind,
+        bind = bind
     )
 }

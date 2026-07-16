@@ -67,26 +67,26 @@ class BraidListAdapterApiTest {
         scope.viewBinding(
             inflate = testInflater,
             keySelector = ErgonomicTextItem::id,
-            matches = { item -> !item.isExpanded },
+            matches = { item -> !item.isExpanded }
         ) { }
         scope.viewBinding(
             inflate = testInflater,
             keySelector = ErgonomicTextItem::id,
-            matches = { item -> item.isExpanded },
+            matches = { item -> item.isExpanded }
         ) { }
         val registry = scope.registry()
 
         assertEquals(
             0,
             registry.viewTypeFor(
-                ErgonomicTextItem(id = 1L, text = "Text", isExpanded = false),
-            ),
+                ErgonomicTextItem(id = 1L, text = "Text", isExpanded = false)
+            )
         )
         assertEquals(
             1,
             registry.viewTypeFor(
-                ErgonomicTextItem(id = 1L, text = "Text", isExpanded = true),
-            ),
+                ErgonomicTextItem(id = 1L, text = "Text", isExpanded = true)
+            )
         )
     }
 
@@ -97,14 +97,14 @@ class BraidListAdapterApiTest {
         assertTrue(
             callback.areItemsTheSame(
                 ErgonomicTextItem(id = 1L, text = "Old"),
-                ErgonomicTextItem(id = 1L, text = "New"),
-            ),
+                ErgonomicTextItem(id = 1L, text = "New")
+            )
         )
         assertFalse(
             callback.areItemsTheSame(
                 ErgonomicTextItem(id = 1L, text = "Text"),
-                ErgonomicTextItem(id = 2L, text = "Text"),
-            ),
+                ErgonomicTextItem(id = 2L, text = "Text")
+            )
         )
     }
 
@@ -115,14 +115,14 @@ class BraidListAdapterApiTest {
         assertTrue(
             callback.areContentsTheSame(
                 ErgonomicTextItem(id = 1L, text = "Same"),
-                ErgonomicTextItem(id = 1L, text = "Same"),
-            ),
+                ErgonomicTextItem(id = 1L, text = "Same")
+            )
         )
         assertFalse(
             callback.areContentsTheSame(
                 ErgonomicTextItem(id = 1L, text = "Old"),
-                ErgonomicTextItem(id = 1L, text = "New"),
-            ),
+                ErgonomicTextItem(id = 1L, text = "New")
+            )
         )
     }
 
@@ -136,12 +136,12 @@ class BraidListAdapterApiTest {
             areContentsTheSame = { oldItem, newItem ->
                 comparisonCount += 1
                 oldItem.id == newItem.id
-            },
+            }
         ) { }
 
         val result = scope.callback().areContentsTheSame(
             ErgonomicTextItem(id = 1L, text = "Old"),
-            ErgonomicTextItem(id = 1L, text = "New"),
+            ErgonomicTextItem(id = 1L, text = "New")
         )
 
         assertTrue(result)
@@ -159,12 +159,12 @@ class BraidListAdapterApiTest {
             getChangePayload = { _, _ ->
                 payloadRequestCount += 1
                 expectedPayload
-            },
+            }
         ) { }
 
         val actualPayload = scope.callback().getChangePayload(
             ErgonomicTextItem(id = 1L, text = "Old"),
-            ErgonomicTextItem(id = 1L, text = "New"),
+            ErgonomicTextItem(id = 1L, text = "New")
         )
 
         assertSame(expectedPayload, actualPayload)
@@ -195,12 +195,12 @@ class BraidListAdapterApiTest {
 
         assertEquals(
             0,
-            registry.viewTypeFor(ErgonomicImageItem(id = 1L, url = "image.png")),
+            registry.viewTypeFor(ErgonomicImageItem(id = 1L, url = "image.png"))
         )
         assertEquals(1, registry.viewTypeFor(ErgonomicTextItem(id = 2L, text = "Text")))
         assertSame(
             imageDelegate,
-            registry.resolve(ErgonomicImageItem(id = 1L, url = "image.png")).delegate,
+            registry.resolve(ErgonomicImageItem(id = 1L, url = "image.png")).delegate
         )
     }
 
@@ -226,16 +226,16 @@ class BraidListAdapterApiTest {
     fun registryVarargFactoryPreservesDelegateOrder() {
         val registry = braidDelegateRegistry<ErgonomicItem>(
             ImageDelegate(),
-            textDelegate(),
+            textDelegate()
         )
 
         assertEquals(
             0,
-            registry.viewTypeFor(ErgonomicImageItem(id = 1L, url = "image.png")),
+            registry.viewTypeFor(ErgonomicImageItem(id = 1L, url = "image.png"))
         )
         assertEquals(
             1,
-            registry.viewTypeFor(ErgonomicTextItem(id = 2L, text = "Text")),
+            registry.viewTypeFor(ErgonomicTextItem(id = 2L, text = "Text"))
         )
     }
 
@@ -248,11 +248,11 @@ class BraidListAdapterApiTest {
 
         assertEquals(
             0,
-            registry.viewTypeFor(ErgonomicTextItem(id = 1L, text = "Text")),
+            registry.viewTypeFor(ErgonomicTextItem(id = 1L, text = "Text"))
         )
         assertEquals(
             1,
-            registry.viewTypeFor(ErgonomicImageItem(id = 2L, url = "image.png")),
+            registry.viewTypeFor(ErgonomicImageItem(id = 2L, url = "image.png"))
         )
     }
 
@@ -264,9 +264,9 @@ class BraidListAdapterApiTest {
             AdapterDelegate<
                 ErgonomicItem,
                 out ErgonomicItem,
-                out RecyclerView.ViewHolder,
-            >,
-        >(original)
+                out RecyclerView.ViewHolder
+                >
+            >(original)
         val registry = braidDelegateRegistry(*delegates)
 
         delegates[0] = replacement
@@ -274,8 +274,8 @@ class BraidListAdapterApiTest {
         assertSame(
             original,
             registry.resolve(
-                ErgonomicImageItem(id = 1L, url = "image.png"),
-            ).delegate,
+                ErgonomicImageItem(id = 1L, url = "image.png")
+            ).delegate
         )
     }
 
@@ -306,14 +306,14 @@ class BraidListAdapterApiTest {
         assertTrue(
             registry.itemCallback.areItemsTheSame(
                 ErgonomicTextItem(id = 1L, text = "Old"),
-                ErgonomicTextItem(id = 1L, text = "New"),
-            ),
+                ErgonomicTextItem(id = 1L, text = "New")
+            )
         )
         assertFalse(
             registry.itemCallback.areContentsTheSame(
                 ErgonomicTextItem(id = 1L, text = "Old"),
-                ErgonomicTextItem(id = 1L, text = "New"),
-            ),
+                ErgonomicTextItem(id = 1L, text = "New")
+            )
         )
     }
 
@@ -326,20 +326,12 @@ class BraidListAdapterApiTest {
 
 private sealed interface ErgonomicItem
 
-private data class ErgonomicTextItem(
-    val id: Long,
-    val text: String,
-    val isExpanded: Boolean = true,
-) : ErgonomicItem
+private data class ErgonomicTextItem(val id: Long, val text: String, val isExpanded: Boolean = true) : ErgonomicItem
 
-private data class ErgonomicImageItem(
-    val id: Long,
-    val url: String,
-) : ErgonomicItem
+private data class ErgonomicImageItem(val id: Long, val url: String) : ErgonomicItem
 
 private class TestBinding : ViewBinding {
-    override fun getRoot(): View =
-        throw NotImplementedError("Android views are not used by local unit tests.")
+    override fun getRoot(): View = throw NotImplementedError("Android views are not used by local unit tests.")
 }
 
 private val testInflater: (LayoutInflater, ViewGroup, Boolean) -> TestBinding =
@@ -347,28 +339,27 @@ private val testInflater: (LayoutInflater, ViewGroup, Boolean) -> TestBinding =
         throw NotImplementedError("ViewBinding inflation is not used by local unit tests.")
     }
 
-private fun ergonomicScope(): BraidAdapterScope<ErgonomicItem> =
-    BraidAdapterScope()
+private fun ergonomicScope(): BraidAdapterScope<ErgonomicItem> = BraidAdapterScope()
 
 private fun BraidAdapterScope<ErgonomicItem>.registerTextDelegate() {
     viewBinding(
         inflate = testInflater,
-        keySelector = ErgonomicTextItem::id,
+        keySelector = ErgonomicTextItem::id
     ) { }
 }
 
 private fun BraidAdapterScope<ErgonomicItem>.registerImageDelegate() {
     viewBinding(
         inflate = testInflater,
-        keySelector = ErgonomicImageItem::id,
+        keySelector = ErgonomicImageItem::id
     ) { }
 }
 
 private fun textDelegate(): AdapterDelegate<
     ErgonomicItem,
     out ErgonomicItem,
-    out RecyclerView.ViewHolder,
-> {
+    out RecyclerView.ViewHolder
+    > {
     val scope = ergonomicScope()
     scope.registerTextDelegate()
     return scope.delegateSnapshot().single()
@@ -381,47 +372,39 @@ private fun BraidAdapterScope<ErgonomicItem>.callback(): DelegateItemCallback<Er
     DelegateItemCallback(registry())
 
 @Suppress("unused")
-private fun inferredSingleItemFactoryUsage(): BraidListAdapter<ErgonomicTextItem> =
-    braidListAdapter(
-        inflate = testInflater,
-        keySelector = ErgonomicTextItem::id,
-    ) { }
+private fun inferredSingleItemFactoryUsage(): BraidListAdapter<ErgonomicTextItem> = braidListAdapter(
+    inflate = testInflater,
+    keySelector = ErgonomicTextItem::id
+) { }
 
 @Suppress("unused")
 private fun explicitSingleItemFactoryUsage(): BraidListAdapter<ErgonomicTextItem> =
     braidListAdapter<ErgonomicTextItem, TestBinding, Long>(
         inflate = testInflater,
-        keySelector = ErgonomicTextItem::id,
+        keySelector = ErgonomicTextItem::id
     ) { }
 
 @Suppress("unused")
-private fun configuredSingleItemFactoryUsage(): BraidListAdapter<ErgonomicTextItem> =
-    braidListAdapter(
-        inflate = testInflater,
-        keySelector = ErgonomicTextItem::id,
-        areContentsTheSame = { oldItem, newItem ->
-            oldItem.text == newItem.text
-        },
-        getChangePayload = { _, _ -> Any() },
-        bindPayloads = { _, _ -> },
-    ) { }
+private fun configuredSingleItemFactoryUsage(): BraidListAdapter<ErgonomicTextItem> = braidListAdapter(
+    inflate = testInflater,
+    keySelector = ErgonomicTextItem::id,
+    areContentsTheSame = { oldItem, newItem ->
+        oldItem.text == newItem.text
+    },
+    getChangePayload = { _, _ -> Any() },
+    bindPayloads = { _, _ -> }
+) { }
 
-private class ImageDelegate :
-    AdapterDelegate<ErgonomicItem, ErgonomicImageItem, RecyclerView.ViewHolder>() {
+private class ImageDelegate : AdapterDelegate<ErgonomicItem, ErgonomicImageItem, RecyclerView.ViewHolder>() {
 
     override fun isForItem(item: ErgonomicItem): Boolean = item is ErgonomicImageItem
 
     override fun createViewHolder(parent: ViewGroup): RecyclerView.ViewHolder =
         throw NotImplementedError("ViewHolder creation is not used by local unit tests.")
 
-    override fun bindViewHolder(
-        holder: RecyclerView.ViewHolder,
-        item: ErgonomicImageItem,
-        payloads: List<Any>,
-    ): Unit = Unit
+    override fun bindViewHolder(holder: RecyclerView.ViewHolder, item: ErgonomicImageItem, payloads: List<Any>): Unit =
+        Unit
 
-    override fun areItemsTheSame(
-        oldItem: ErgonomicImageItem,
-        newItem: ErgonomicImageItem,
-    ): Boolean = oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: ErgonomicImageItem, newItem: ErgonomicImageItem): Boolean =
+        oldItem.id == newItem.id
 }

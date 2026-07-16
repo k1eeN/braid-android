@@ -25,7 +25,7 @@ class StatefulViewBindingDelegateInstrumentedTest {
             stateFactory = {
                 stateFactoryCalls += 1
                 InstrumentedHolderState()
-            },
+            }
         )
         val holder = delegate.createViewHolder(parent())
 
@@ -40,7 +40,7 @@ class StatefulViewBindingDelegateInstrumentedTest {
     fun sameStateIsReusedForRepeatedBindsOfOneHolder() = onMainThread {
         val boundStates = mutableListOf<InstrumentedHolderState>()
         val delegate = instrumentedDelegate(
-            fullBinder = { _, state -> boundStates += state },
+            fullBinder = { _, state -> boundStates += state }
         )
         val holder = delegate.createViewHolder(parent())
 
@@ -70,7 +70,7 @@ class StatefulViewBindingDelegateInstrumentedTest {
             recycleCallback = { state ->
                 recycledBinding = this
                 recycledState = state
-            },
+            }
         )
         val holder = delegate.createViewHolder(parent())
 
@@ -84,7 +84,7 @@ class StatefulViewBindingDelegateInstrumentedTest {
     fun attachedToWindowReceivesTheHolderState() = onMainThread {
         var attachedState: InstrumentedHolderState? = null
         val delegate = instrumentedDelegate(
-            attachedCallback = { state -> attachedState = state },
+            attachedCallback = { state -> attachedState = state }
         )
         val holder = delegate.createViewHolder(parent())
 
@@ -97,7 +97,7 @@ class StatefulViewBindingDelegateInstrumentedTest {
     fun detachedFromWindowReceivesTheHolderState() = onMainThread {
         var detachedState: InstrumentedHolderState? = null
         val delegate = instrumentedDelegate(
-            detachedCallback = { state -> detachedState = state },
+            detachedCallback = { state -> detachedState = state }
         )
         val holder = delegate.createViewHolder(parent())
 
@@ -113,7 +113,7 @@ class StatefulViewBindingDelegateInstrumentedTest {
             failedToRecycleCallback = { state ->
                 failedState = state
                 true
-            },
+            }
         )
         val holder = delegate.createViewHolder(parent())
 
@@ -129,7 +129,7 @@ class StatefulViewBindingDelegateInstrumentedTest {
         var payloadBindCalls = 0
         val delegate = instrumentedDelegate(
             fullBinder = { _, _ -> fullBindCalls += 1 },
-            payloadBinder = { _, _, _ -> payloadBindCalls += 1 },
+            payloadBinder = { _, _, _ -> payloadBindCalls += 1 }
         )
         val holder = delegate.createViewHolder(parent())
 
@@ -145,7 +145,7 @@ class StatefulViewBindingDelegateInstrumentedTest {
         var receivedPayloads: List<Any>? = null
         val delegate = instrumentedDelegate(
             fullBinder = { _, _ -> fullBindCalled = true },
-            payloadBinder = { _, _, payloads -> receivedPayloads = payloads },
+            payloadBinder = { _, _, payloads -> receivedPayloads = payloads }
         )
         val holder = delegate.createViewHolder(parent())
         val payloads: List<Any> = listOf(Any())
@@ -157,41 +157,34 @@ class StatefulViewBindingDelegateInstrumentedTest {
     }
 
     @Test
-    fun nonEmptyPayloadsFallBackToFullBinderWhenPayloadBinderIsMissing() =
-        onMainThread {
-            var fullBindCalls = 0
-            val delegate = instrumentedDelegate(
-                fullBinder = { _, _ -> fullBindCalls += 1 },
-                payloadBinder = null,
-            )
-            val holder = delegate.createViewHolder(parent())
+    fun nonEmptyPayloadsFallBackToFullBinderWhenPayloadBinderIsMissing() = onMainThread {
+        var fullBindCalls = 0
+        val delegate = instrumentedDelegate(
+            fullBinder = { _, _ -> fullBindCalls += 1 },
+            payloadBinder = null
+        )
+        val holder = delegate.createViewHolder(parent())
 
-            delegate.bindViewHolder(
-                holder,
-                InstrumentedItem(id = 1L),
-                listOf(Any()),
-            )
+        delegate.bindViewHolder(
+            holder,
+            InstrumentedItem(id = 1L),
+            listOf(Any())
+        )
 
-            assertEquals(1, fullBindCalls)
-        }
+        assertEquals(1, fullBindCalls)
+    }
 }
 
 private data class InstrumentedItem(val id: Long)
 
 private class InstrumentedHolderState
 
-private class InstrumentedBinding private constructor(
-    private val rootView: View,
-) : ViewBinding {
+private class InstrumentedBinding private constructor(private val rootView: View) : ViewBinding {
 
     override fun getRoot(): View = rootView
 
     companion object {
-        fun inflate(
-            layoutInflater: LayoutInflater,
-            parent: ViewGroup,
-            attachToParent: Boolean,
-        ): InstrumentedBinding {
+        fun inflate(layoutInflater: LayoutInflater, parent: ViewGroup, attachToParent: Boolean): InstrumentedBinding {
             val root = View(layoutInflater.context)
             if (attachToParent) {
                 parent.addView(root)
@@ -204,27 +197,30 @@ private class InstrumentedBinding private constructor(
 private typealias InstrumentedDelegate = AdapterDelegate<
     Any,
     InstrumentedItem,
-    StatefulViewBindingViewHolder<InstrumentedBinding, InstrumentedHolderState>,
->
+    StatefulViewBindingViewHolder<InstrumentedBinding, InstrumentedHolderState>
+    >
 
+// The test factory mirrors the low-level stateful bridge so each callback can be verified independently.
+@Suppress("LongParameterList")
 private fun instrumentedDelegate(
     stateFactory: InstrumentedBinding.() -> InstrumentedHolderState = {
         InstrumentedHolderState()
     },
     fullBinder: InstrumentedBinding.(
         InstrumentedItem,
-        InstrumentedHolderState,
+        InstrumentedHolderState
     ) -> Unit = { _, _ -> },
-    payloadBinder: (InstrumentedBinding.(
-        InstrumentedItem,
-        InstrumentedHolderState,
-        List<Any>,
-    ) -> Unit)? = null,
+    payloadBinder: (
+        InstrumentedBinding.(
+            InstrumentedItem,
+            InstrumentedHolderState,
+            List<Any>
+        ) -> Unit
+    )? = null,
     recycleCallback: InstrumentedBinding.(InstrumentedHolderState) -> Unit = {},
     attachedCallback: InstrumentedBinding.(InstrumentedHolderState) -> Unit = {},
     detachedCallback: InstrumentedBinding.(InstrumentedHolderState) -> Unit = {},
-    failedToRecycleCallback:
-        InstrumentedBinding.(InstrumentedHolderState) -> Boolean = { false },
+    failedToRecycleCallback: InstrumentedBinding.(InstrumentedHolderState) -> Boolean = { false }
 ): InstrumentedDelegate = createStatefulViewBindingDelegate(
     inflate = InstrumentedBinding::inflate,
     matcher = { item -> item is InstrumentedItem },
@@ -237,11 +233,11 @@ private fun instrumentedDelegate(
     recycleCallback = recycleCallback,
     attachedCallback = attachedCallback,
     detachedCallback = detachedCallback,
-    failedToRecycleCallback = failedToRecycleCallback,
+    failedToRecycleCallback = failedToRecycleCallback
 )
 
 private fun parent(): ViewGroup = FrameLayout(
-    InstrumentationRegistry.getInstrumentation().targetContext,
+    InstrumentationRegistry.getInstrumentation().targetContext
 )
 
 private fun onMainThread(block: () -> Unit) {

@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.detekt)
     alias(libs.plugins.kotlin.android)
 }
 
@@ -13,6 +14,7 @@ android {
     defaultConfig {
         applicationId = "io.github.k1een.braid.sample"
         minSdk = 23
+        //noinspection OldTargetApi
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -34,6 +36,18 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    lint {
+        abortOnError = true
+        warningsAsErrors = true
+        checkTestSources = true
+        checkGeneratedSources = false
+
+        textReport = true
+        htmlReport = true
+        xmlReport = true
+        sarifReport = true
     }
 }
 

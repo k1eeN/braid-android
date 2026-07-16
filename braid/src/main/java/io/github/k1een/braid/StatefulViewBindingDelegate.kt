@@ -16,28 +16,30 @@ import androidx.viewbinding.ViewBinding
  * Stateless items should use [ViewBindingDelegate] or
  * [BraidAdapterScope.viewBinding].
  *
+ * Holder lifecycle callbacks intentionally remain on this stateful delegate
+ * contract so one holder state receives every matching event.
+ *
  * @param BaseItem common item type used by the adapter.
  * @param Item item subtype handled by this delegate.
  * @param VB ViewBinding type used to render [Item].
  * @param State holder-local state type used by this delegate.
  * @param inflate function that creates [VB] for a RecyclerView parent.
  */
+@Suppress("TooManyFunctions")
 public abstract class StatefulViewBindingDelegate<
     BaseItem : Any,
     Item : BaseItem,
     VB : ViewBinding,
-    State : Any,
->(
-    private val inflate: (LayoutInflater, ViewGroup, Boolean) -> VB,
+    State : Any
+    >(
+    private val inflate: (LayoutInflater, ViewGroup, Boolean) -> VB
 ) : AdapterDelegate<
     BaseItem,
     Item,
-    StatefulViewBindingViewHolder<VB, State>,
->() {
+    StatefulViewBindingViewHolder<VB, State>
+    >() {
 
-    final override fun createViewHolder(
-        parent: ViewGroup,
-    ): StatefulViewBindingViewHolder<VB, State> {
+    final override fun createViewHolder(parent: ViewGroup): StatefulViewBindingViewHolder<VB, State> {
         val layoutInflater = LayoutInflater.from(parent.context)
         val binding = inflate(layoutInflater, parent, false)
         val state = createState(binding)
@@ -47,37 +49,30 @@ public abstract class StatefulViewBindingDelegate<
     final override fun bindViewHolder(
         holder: StatefulViewBindingViewHolder<VB, State>,
         item: Item,
-        payloads: List<Any>,
+        payloads: List<Any>
     ) {
         bind(
             binding = holder.binding,
             state = holder.state,
             item = item,
-            payloads = payloads,
+            payloads = payloads
         )
     }
 
-    final override fun onViewRecycled(
-        holder: StatefulViewBindingViewHolder<VB, State>,
-    ) {
+    final override fun onViewRecycled(holder: StatefulViewBindingViewHolder<VB, State>) {
         recycle(holder.binding, holder.state)
     }
 
-    final override fun onViewAttachedToWindow(
-        holder: StatefulViewBindingViewHolder<VB, State>,
-    ) {
+    final override fun onViewAttachedToWindow(holder: StatefulViewBindingViewHolder<VB, State>) {
         attachedToWindow(holder.binding, holder.state)
     }
 
-    final override fun onViewDetachedFromWindow(
-        holder: StatefulViewBindingViewHolder<VB, State>,
-    ) {
+    final override fun onViewDetachedFromWindow(holder: StatefulViewBindingViewHolder<VB, State>) {
         detachedFromWindow(holder.binding, holder.state)
     }
 
-    final override fun onFailedToRecycleView(
-        holder: StatefulViewBindingViewHolder<VB, State>,
-    ): Boolean = failedToRecycle(holder.binding, holder.state)
+    final override fun onFailedToRecycleView(holder: StatefulViewBindingViewHolder<VB, State>): Boolean =
+        failedToRecycle(holder.binding, holder.state)
 
     /** Creates the holder-local [State] for [binding]. */
     protected abstract fun createState(binding: VB): State
@@ -88,37 +83,20 @@ public abstract class StatefulViewBindingDelegate<
      * [payloads] are forwarded unchanged from RecyclerView. An empty list
      * represents a full bind.
      */
-    protected abstract fun bind(
-        binding: VB,
-        state: State,
-        item: Item,
-        payloads: List<Any>,
-    )
+    protected abstract fun bind(binding: VB, state: State, item: Item, payloads: List<Any>)
 
     /** Releases listeners or resources associated with [binding] and [state]. */
-    protected open fun recycle(
-        binding: VB,
-        state: State,
-    ): Unit = Unit
+    protected open fun recycle(binding: VB, state: State): Unit = Unit
 
     /** Handles attachment of the holder that owns [binding] and [state]. */
-    protected open fun attachedToWindow(
-        binding: VB,
-        state: State,
-    ): Unit = Unit
+    protected open fun attachedToWindow(binding: VB, state: State): Unit = Unit
 
     /** Handles detachment of the holder that owns [binding] and [state]. */
-    protected open fun detachedFromWindow(
-        binding: VB,
-        state: State,
-    ): Unit = Unit
+    protected open fun detachedFromWindow(binding: VB, state: State): Unit = Unit
 
     /**
      * Handles a failed recycling attempt for the holder that owns [binding]
      * and [state]. Return `true` when the holder may still be recycled.
      */
-    protected open fun failedToRecycle(
-        binding: VB,
-        state: State,
-    ): Boolean = false
+    protected open fun failedToRecycle(binding: VB, state: State): Boolean = false
 }

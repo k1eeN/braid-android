@@ -27,7 +27,7 @@ class BraidListAdapterFactoryInstrumentedTest {
         val adapter: BraidListAdapter<FactoryItem> = onMainThread {
             braidListAdapter(
                 inflate = FactoryBinding::inflate,
-                keySelector = FactoryItem::id,
+                keySelector = FactoryItem::id
             ) { item ->
                 label.text = item.title
                 boundItems += item
@@ -35,7 +35,7 @@ class BraidListAdapterFactoryInstrumentedTest {
         }
         val items = listOf(
             FactoryItem(id = 1L, title = "First"),
-            FactoryItem(id = 2L, title = "Second"),
+            FactoryItem(id = 2L, title = "Second")
         )
         adapter.submitAndAwait(items)
 
@@ -43,7 +43,7 @@ class BraidListAdapterFactoryInstrumentedTest {
             listOf(0, 0),
             onMainThread {
                 items.indices.map(adapter::getItemViewType)
-            },
+            }
         )
 
         val holder = onMainThread {
@@ -67,7 +67,7 @@ class BraidListAdapterFactoryInstrumentedTest {
                 keySelector = FactoryItem::id,
                 bindPayloads = { _, payloads ->
                     receivedPayloads = payloads
-                },
+                }
             ) { _ ->
                 fullBindCalls += 1
             }
@@ -92,7 +92,7 @@ class BraidListAdapterFactoryInstrumentedTest {
         val adapter = onMainThread {
             braidListAdapter(
                 inflate = FactoryBinding::inflate,
-                keySelector = FactoryItem::id,
+                keySelector = FactoryItem::id
             ) { _ ->
                 fullBindCalls += 1
             }
@@ -114,7 +114,7 @@ class BraidListAdapterFactoryInstrumentedTest {
         val adapter = onMainThread {
             braidListAdapter(
                 inflate = FactoryBinding::inflate,
-                keySelector = FactoryItem::id,
+                keySelector = FactoryItem::id
             ) { }
         }
         val observer = TrackingObserver()
@@ -146,7 +146,7 @@ class BraidListAdapterFactoryInstrumentedTest {
                 areContentsTheSame = { _, _ ->
                     comparisonCalls += 1
                     true
-                },
+                }
             ) { }
         }
         val observer = TrackingObserver()
@@ -166,7 +166,7 @@ class BraidListAdapterFactoryInstrumentedTest {
             braidListAdapter(
                 inflate = FactoryBinding::inflate,
                 keySelector = FactoryItem::id,
-                getChangePayload = { _, _ -> expectedPayload },
+                getChangePayload = { _, _ -> expectedPayload }
             ) { }
         }
         val observer = TrackingObserver()
@@ -185,7 +185,7 @@ class BraidListAdapterFactoryInstrumentedTest {
         val blockAdapter: BraidListAdapter<FactoryItem> = braidListAdapter {
             viewBinding(
                 inflate = FactoryBinding::inflate,
-                keySelector = FactoryItem::id,
+                keySelector = FactoryItem::id
             ) { }
         }
 
@@ -194,23 +194,14 @@ class BraidListAdapterFactoryInstrumentedTest {
     }
 }
 
-private data class FactoryItem(
-    val id: Long,
-    val title: String,
-)
+private data class FactoryItem(val id: Long, val title: String)
 
-private class FactoryBinding private constructor(
-    val label: TextView,
-) : ViewBinding {
+private class FactoryBinding private constructor(val label: TextView) : ViewBinding {
 
     override fun getRoot(): TextView = label
 
     companion object {
-        fun inflate(
-            layoutInflater: LayoutInflater,
-            parent: ViewGroup,
-            attachToParent: Boolean,
-        ): FactoryBinding {
+        fun inflate(layoutInflater: LayoutInflater, parent: ViewGroup, attachToParent: Boolean): FactoryBinding {
             val label = TextView(layoutInflater.context)
             if (attachToParent) {
                 parent.addView(label)
@@ -222,21 +213,14 @@ private class FactoryBinding private constructor(
 
 private class FactoryDelegate :
     ViewBindingDelegate<FactoryItem, FactoryItem, FactoryBinding>(
-        inflate = FactoryBinding::inflate,
+        inflate = FactoryBinding::inflate
     ) {
 
     override fun isForItem(item: FactoryItem): Boolean = true
 
-    override fun areItemsTheSame(
-        oldItem: FactoryItem,
-        newItem: FactoryItem,
-    ): Boolean = oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: FactoryItem, newItem: FactoryItem): Boolean = oldItem.id == newItem.id
 
-    override fun bind(
-        binding: FactoryBinding,
-        item: FactoryItem,
-        payloads: List<Any>,
-    ): Unit = Unit
+    override fun bind(binding: FactoryBinding, item: FactoryItem, payloads: List<Any>): Unit = Unit
 }
 
 private class TrackingObserver : RecyclerView.AdapterDataObserver() {
@@ -248,18 +232,11 @@ private class TrackingObserver : RecyclerView.AdapterDataObserver() {
     val totalEvents: Int
         get() = changedItems + insertedItems + removedItems
 
-    override fun onItemRangeChanged(
-        positionStart: Int,
-        itemCount: Int,
-    ) {
+    override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
         changedItems += itemCount
     }
 
-    override fun onItemRangeChanged(
-        positionStart: Int,
-        itemCount: Int,
-        payload: Any?,
-    ) {
+    override fun onItemRangeChanged(positionStart: Int, itemCount: Int, payload: Any?) {
         changedItems += itemCount
         lastPayload = payload
     }
@@ -291,13 +268,13 @@ private fun BraidListAdapter<FactoryItem>.submitAndAwait(items: List<FactoryItem
 
     assertTrue(
         "BraidListAdapter did not commit its list.",
-        committed.await(10L, TimeUnit.SECONDS),
+        committed.await(10L, TimeUnit.SECONDS)
     )
     InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 }
 
 private fun parent(): ViewGroup = FrameLayout(
-    InstrumentationRegistry.getInstrumentation().targetContext,
+    InstrumentationRegistry.getInstrumentation().targetContext
 )
 
 private fun <Result> onMainThread(block: () -> Result): Result {

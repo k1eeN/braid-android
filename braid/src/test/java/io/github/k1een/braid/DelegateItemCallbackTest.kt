@@ -15,16 +15,16 @@ class DelegateItemCallbackTest {
     @Test
     fun `items from different delegate instances are never the same item`() {
         val firstDelegate = RecordingDelegate<TextItem>(
-            matcher = { item -> item is TextItem },
+            matcher = { item -> item is TextItem }
         )
         val secondDelegate = RecordingDelegate<ImageItem>(
-            matcher = { item -> item is ImageItem },
+            matcher = { item -> item is ImageItem }
         )
         val callback = callback(firstDelegate, secondDelegate)
 
         val result = callback.areItemsTheSame(
             TextItem(id = 1L, text = "Text"),
-            ImageItem(id = 1L, url = "image.png"),
+            ImageItem(id = 1L, url = "image.png")
         )
 
         assertFalse(result)
@@ -36,17 +36,17 @@ class DelegateItemCallbackTest {
     fun `items from the same delegate use its identity comparison`() {
         val delegate = RecordingDelegate<TextItem>(
             matcher = { item -> item is TextItem },
-            itemComparator = { oldItem, newItem -> oldItem.id == newItem.id },
+            itemComparator = { oldItem, newItem -> oldItem.id == newItem.id }
         )
         val callback = callback(delegate)
 
         val sameItemResult = callback.areItemsTheSame(
             TextItem(id = 1L, text = "Old"),
-            TextItem(id = 1L, text = "New"),
+            TextItem(id = 1L, text = "New")
         )
         val differentItemResult = callback.areItemsTheSame(
             TextItem(id = 1L, text = "Old"),
-            TextItem(id = 2L, text = "New"),
+            TextItem(id = 2L, text = "New")
         )
 
         assertTrue(sameItemResult)
@@ -58,13 +58,13 @@ class DelegateItemCallbackTest {
     fun `contents comparison is delegated`() {
         val delegate = RecordingDelegate<TextItem>(
             matcher = { item -> item is TextItem },
-            contentComparator = { oldItem, newItem -> oldItem == newItem },
+            contentComparator = { oldItem, newItem -> oldItem == newItem }
         )
         val callback = callback(delegate)
 
         val result = callback.areContentsTheSame(
             TextItem(id = 1L, text = "Old"),
-            TextItem(id = 1L, text = "New"),
+            TextItem(id = 1L, text = "New")
         )
 
         assertFalse(result)
@@ -76,13 +76,13 @@ class DelegateItemCallbackTest {
         val expectedPayload = Any()
         val delegate = RecordingDelegate<TextItem>(
             matcher = { item -> item is TextItem },
-            payloadProvider = { _, _ -> expectedPayload },
+            payloadProvider = { _, _ -> expectedPayload }
         )
         val callback = callback(delegate)
 
         val actualPayload = callback.getChangePayload(
             TextItem(id = 1L, text = "Old"),
-            TextItem(id = 1L, text = "New"),
+            TextItem(id = 1L, text = "New")
         )
 
         assertSame(expectedPayload, actualPayload)
@@ -93,17 +93,17 @@ class DelegateItemCallbackTest {
     fun `different delegates have no change payload`() {
         val firstDelegate = RecordingDelegate<TextItem>(
             matcher = { item -> item is TextItem },
-            payloadProvider = { _, _ -> Any() },
+            payloadProvider = { _, _ -> Any() }
         )
         val secondDelegate = RecordingDelegate<ImageItem>(
             matcher = { item -> item is ImageItem },
-            payloadProvider = { _, _ -> Any() },
+            payloadProvider = { _, _ -> Any() }
         )
         val callback = callback(firstDelegate, secondDelegate)
 
         val payload = callback.getChangePayload(
             TextItem(id = 1L, text = "Text"),
-            ImageItem(id = 1L, url = "image.png"),
+            ImageItem(id = 1L, url = "image.png")
         )
 
         assertNull(payload)
@@ -115,12 +115,12 @@ class DelegateItemCallbackTest {
     fun `different delegates do not have the same contents`() {
         val callback = callback(
             RecordingDelegate<TextItem>(matcher = { item -> item is TextItem }),
-            RecordingDelegate<ImageItem>(matcher = { item -> item is ImageItem }),
+            RecordingDelegate<ImageItem>(matcher = { item -> item is ImageItem })
         )
 
         val result = callback.areContentsTheSame(
             TextItem(id = 1L, text = "Same"),
-            ImageItem(id = 1L, url = "Same"),
+            ImageItem(id = 1L, url = "Same")
         )
 
         assertFalse(result)
@@ -129,14 +129,14 @@ class DelegateItemCallbackTest {
     @Test
     fun `delegate resolution errors are not suppressed by callback`() {
         val delegate = RecordingDelegate<TextItem>(
-            matcher = { item -> item is TextItem },
+            matcher = { item -> item is TextItem }
         )
         val callback = callback(delegate)
 
         val error = assertThrows(IllegalStateException::class.java) {
             callback.areItemsTheSame(
                 TextItem(id = 1L, text = "Text"),
-                ImageItem(id = 1L, url = "image.png"),
+                ImageItem(id = 1L, url = "image.png")
             )
         }
 
@@ -147,10 +147,10 @@ class DelegateItemCallbackTest {
         vararg delegates: AdapterDelegate<
             DiffItem,
             out DiffItem,
-            out RecyclerView.ViewHolder,
-        >,
+            out RecyclerView.ViewHolder
+            >
     ): DelegateItemCallback<DiffItem> = DelegateItemCallback(
-        DelegateRegistry(delegates.toList()),
+        DelegateRegistry(delegates.toList())
     )
 }
 
@@ -158,15 +158,9 @@ private sealed interface DiffItem {
     val id: Long
 }
 
-private data class TextItem(
-    override val id: Long,
-    val text: String,
-) : DiffItem
+private data class TextItem(override val id: Long, val text: String) : DiffItem
 
-private data class ImageItem(
-    override val id: Long,
-    val url: String,
-) : DiffItem
+private data class ImageItem(override val id: Long, val url: String) : DiffItem
 
 private class RecordingDelegate<Item : DiffItem>(
     private val matcher: (DiffItem) -> Boolean,
@@ -176,7 +170,7 @@ private class RecordingDelegate<Item : DiffItem>(
     private val contentComparator: (Item, Item) -> Boolean = { oldItem, newItem ->
         oldItem == newItem
     },
-    private val payloadProvider: (Item, Item) -> Any? = { _, _ -> null },
+    private val payloadProvider: (Item, Item) -> Any? = { _, _ -> null }
 ) : AdapterDelegate<DiffItem, Item, RecyclerView.ViewHolder>() {
 
     var itemsComparisonCount: Int = 0
@@ -193,11 +187,7 @@ private class RecordingDelegate<Item : DiffItem>(
     override fun createViewHolder(parent: ViewGroup): RecyclerView.ViewHolder =
         throw NotImplementedError("ViewHolder creation is not used by local unit tests.")
 
-    override fun bindViewHolder(
-        holder: RecyclerView.ViewHolder,
-        item: Item,
-        payloads: List<Any>,
-    ): Unit = Unit
+    override fun bindViewHolder(holder: RecyclerView.ViewHolder, item: Item, payloads: List<Any>): Unit = Unit
 
     override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
         itemsComparisonCount += 1

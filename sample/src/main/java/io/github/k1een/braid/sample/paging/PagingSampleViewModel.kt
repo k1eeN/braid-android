@@ -15,10 +15,10 @@ internal class PagingSampleViewModel : ViewModel() {
             pageSize = PagingSampleSource.PAGE_SIZE,
             initialLoadSize = PagingSampleSource.PAGE_SIZE,
             prefetchDistance = 5,
-            enablePlaceholders = false,
+            enablePlaceholders = false
         ),
         pagingSourceFactory = {
             PagingSampleSource()
-        },
+        }
     ).flow.cachedIn(viewModelScope)
 }

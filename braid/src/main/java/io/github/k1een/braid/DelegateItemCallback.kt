@@ -2,14 +2,10 @@ package io.github.k1een.braid
 
 import androidx.recyclerview.widget.DiffUtil
 
-internal class DelegateItemCallback<BaseItem : Any>(
-    private val registry: DelegateRegistry<BaseItem>,
-) : DiffUtil.ItemCallback<BaseItem>() {
+internal class DelegateItemCallback<BaseItem : Any>(private val registry: DelegateRegistry<BaseItem>) :
+    DiffUtil.ItemCallback<BaseItem>() {
 
-    override fun areItemsTheSame(
-        oldItem: BaseItem,
-        newItem: BaseItem,
-    ): Boolean {
+    override fun areItemsTheSame(oldItem: BaseItem, newItem: BaseItem): Boolean {
         val oldDelegate = registry.resolve(oldItem)
         val newDelegate = registry.resolve(newItem)
 
@@ -17,10 +13,7 @@ internal class DelegateItemCallback<BaseItem : Any>(
             registry.areItemsTheSame(oldDelegate, oldItem, newItem)
     }
 
-    override fun areContentsTheSame(
-        oldItem: BaseItem,
-        newItem: BaseItem,
-    ): Boolean {
+    override fun areContentsTheSame(oldItem: BaseItem, newItem: BaseItem): Boolean {
         val oldDelegate = registry.resolve(oldItem)
         val newDelegate = registry.resolve(newItem)
 
@@ -28,10 +21,7 @@ internal class DelegateItemCallback<BaseItem : Any>(
             registry.areContentsTheSame(oldDelegate, oldItem, newItem)
     }
 
-    override fun getChangePayload(
-        oldItem: BaseItem,
-        newItem: BaseItem,
-    ): Any? {
+    override fun getChangePayload(oldItem: BaseItem, newItem: BaseItem): Any? {
         val oldDelegate = registry.resolve(oldItem)
         val newDelegate = registry.resolve(newItem)
 
@@ -42,8 +32,6 @@ internal class DelegateItemCallback<BaseItem : Any>(
         }
     }
 
-    private fun isSameRegistration(
-        first: RegisteredDelegate<BaseItem>,
-        second: RegisteredDelegate<BaseItem>,
-    ): Boolean = first.viewType == second.viewType
+    private fun isSameRegistration(first: RegisteredDelegate<BaseItem>, second: RegisteredDelegate<BaseItem>): Boolean =
+        first.viewType == second.viewType
 }
