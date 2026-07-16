@@ -1,6 +1,7 @@
 import com.diffplug.spotless.LineEnding
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import org.gradle.api.tasks.Delete
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
@@ -10,6 +11,7 @@ plugins {
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.maven.publish) apply false
     alias(libs.plugins.spotless)
 }
 
@@ -105,11 +107,49 @@ apiValidation {
     ignoredProjects.add("sample")
 }
 
+val publicationVersion =
+    providers.gradleProperty("VERSION_NAME")
+        .orElse("0.1.0-SNAPSHOT")
+val testMavenRepository = layout.buildDirectory.dir("test-maven-repository")
+
+val cleanTestMavenRepository = tasks.register<Delete>("cleanTestMavenRepository") {
+    delete(testMavenRepository)
+    delete(layout.buildDirectory.dir("publishing-consumer"))
+}
+
+subprojects {
+    pluginManager.withPlugin("com.vanniktech.maven.publish") {
+        tasks.matching { it.name == "publishMavenPublicationToTestRepository" }.configureEach {
+            dependsOn(cleanTestMavenRepository)
+        }
+    }
+}
+
+val verifyMavenPublications =
+    tasks.register<VerifyMavenPublicationsTask>("verifyMavenPublications") {
+        dependsOn(
+            ":braid:publishMavenPublicationToTestRepository",
+            ":braid-paging:publishMavenPublicationToTestRepository"
+        )
+        repositoryDirectory.set(testMavenRepository)
+        versionName.set(publicationVersion)
+        recyclerViewVersion.set(libs.versions.recyclerview)
+        pagingVersion.set(libs.versions.paging)
+    }
+
+val publishingCheck = tasks.register("publishingCheck") {
+    group = "verification"
+    description = "Builds and validates local Maven publications without uploading them."
+    dependsOn(verifyMavenPublications)
+}
+
 tasks.register("qualityCheck") {
     group = "verification"
-    description = "Runs formatting, API, documentation, static analysis, and Android lint checks."
+    description =
+        "Runs formatting, API, documentation, publishing, static analysis, and Android lint checks."
     dependsOn(
         "spotlessCheck",
+        publishingCheck,
         ":dokkaGenerate",
         ":braid:apiCheck",
         ":braid-paging:apiCheck",

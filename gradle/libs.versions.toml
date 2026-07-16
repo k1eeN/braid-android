@@ -7,6 +7,7 @@ dokka = "2.2.0"
 #noinspection GradleDependency
 kotlin = "2.0.21"
 ktlint = "1.8.0"
+mavenPublish = "0.34.0"
 spotless = "8.8.0"
 #noinspection GradleDependency
 coreKtx = "1.13.1"
@@ -42,4 +43,5 @@ binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibil
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
