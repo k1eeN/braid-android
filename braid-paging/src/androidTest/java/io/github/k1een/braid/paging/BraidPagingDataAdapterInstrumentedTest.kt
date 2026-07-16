@@ -7,8 +7,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.paging.LoadState
+import androidx.paging.LoadStateAdapter
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -26,6 +28,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -175,6 +178,163 @@ class BraidPagingDataAdapterInstrumentedTest {
             owner.destroyOnMainThread()
         }
     }
+
+    @Test
+    fun loadStateCompositionRoutesBindPayloadLifecycleAndRecycledHolder() {
+        val fixture = pagingFixture(firstFailedToRecycle = true)
+        val items = listOf<PagingInstrumentedItem>(
+            FirstPagingItem(id = 1L, value = "First"),
+            SecondPagingItem(id = 2L, value = "Second"),
+        )
+        val owner = fixture.adapter.submitAndAwait(items)
+
+        try {
+            val concatAdapter = onMainThread {
+                fixture.adapter.withLoadStateHeaderAndFooter(
+                    header = AlwaysVisibleLoadStateAdapter("header"),
+                    footer = AlwaysVisibleLoadStateAdapter("footer"),
+                )
+            }
+            val viewTypes = onMainThread {
+                PagingConcatViewTypes(
+                    header = concatAdapter.getItemViewType(0),
+                    first = concatAdapter.getItemViewType(1),
+                    second = concatAdapter.getItemViewType(2),
+                    footer = concatAdapter.getItemViewType(3),
+                )
+            }
+            val localFirstViewType = onMainThread {
+                fixture.adapter.getItemViewType(0)
+            }
+            val localSecondViewType = onMainThread {
+                fixture.adapter.getItemViewType(1)
+            }
+
+            assertNotEquals(localFirstViewType, viewTypes.first)
+            assertNotEquals(localSecondViewType, viewTypes.second)
+            assertNotEquals(viewTypes.header, viewTypes.footer)
+
+            val firstHolder = onMainThread {
+                concatAdapter.createViewHolder(parent(), viewTypes.first)
+            }
+            val secondHolder = onMainThread {
+                concatAdapter.createViewHolder(parent(), viewTypes.second)
+            }
+            val payloads = mutableListOf<Any>(Any())
+
+            onMainThread {
+                concatAdapter.bindViewHolder(firstHolder, 1)
+                concatAdapter.bindViewHolder(secondHolder, 2)
+                // ConcatAdapter's inherited three-argument overload does not
+                // forward payloads. Exercise the Paging child path with the
+                // holder whose visible view type was globalized by ConcatAdapter.
+                fixture.adapter.onBindViewHolder(secondHolder, 1, payloads)
+                concatAdapter.onViewAttachedToWindow(secondHolder)
+                concatAdapter.onViewDetachedFromWindow(secondHolder)
+                concatAdapter.onViewRecycled(firstHolder)
+                concatAdapter.onViewRecycled(secondHolder)
+
+                // A recycled holder retains the delegate that physically created it.
+                concatAdapter.bindViewHolder(secondHolder, 2)
+                concatAdapter.onViewRecycled(secondHolder)
+            }
+
+            val failedHolder = onMainThread {
+                concatAdapter.createViewHolder(parent(), viewTypes.first)
+            }
+            val failedToRecycle = onMainThread {
+                concatAdapter.bindViewHolder(failedHolder, 1)
+                concatAdapter.onFailedToRecycleView(failedHolder)
+            }
+
+            assertEquals(2, fixture.firstDelegate.boundItems.size)
+            assertEquals(1, fixture.firstDelegate.recycledCalls)
+            assertEquals(1, fixture.firstDelegate.failedToRecycleCalls)
+            assertTrue(failedToRecycle)
+            assertEquals(3, fixture.secondDelegate.boundItems.size)
+            assertTrue(fixture.secondDelegate.boundPayloads[0].isEmpty())
+            assertSame(payloads, fixture.secondDelegate.boundPayloads[1])
+            assertTrue(fixture.secondDelegate.boundPayloads[2].isEmpty())
+            assertEquals(1, fixture.secondDelegate.attachedCalls)
+            assertEquals(1, fixture.secondDelegate.detachedCalls)
+            assertEquals(2, fixture.secondDelegate.recycledCalls)
+        } finally {
+            owner.destroyOnMainThread()
+        }
+    }
+
+    @Test
+    fun recreatedLoadStateCompositionCanAllocateGlobalTypesInAnotherOrder() {
+        val fixture = pagingFixture()
+        val secondItem = SecondPagingItem(id = 2L, value = "Second")
+        val owner = fixture.adapter.submitAndAwait(
+            listOf(
+                FirstPagingItem(id = 1L, value = "First"),
+                secondItem,
+            ),
+        )
+
+        try {
+            val headerFirstConcat = onMainThread {
+                fixture.adapter.withLoadStateHeaderAndFooter(
+                    header = AlwaysVisibleLoadStateAdapter("header"),
+                    footer = AlwaysVisibleLoadStateAdapter("footer"),
+                )
+            }
+
+            val headerFirstSecondViewType = onMainThread {
+                headerFirstConcat.getItemViewType(0)
+                headerFirstConcat.getItemViewType(1)
+                headerFirstConcat.getItemViewType(2)
+            }
+            val headerFirstHolder = onMainThread {
+                headerFirstConcat.createViewHolder(
+                    parent(),
+                    headerFirstSecondViewType,
+                )
+            }
+            onMainThread {
+                headerFirstConcat.bindViewHolder(headerFirstHolder, 2)
+                headerFirstConcat.onViewRecycled(headerFirstHolder)
+            }
+
+            val pagingFirstConcat = onMainThread {
+                fixture.adapter.withLoadStateHeaderAndFooter(
+                    header = AlwaysVisibleLoadStateAdapter("header"),
+                    footer = AlwaysVisibleLoadStateAdapter("footer"),
+                )
+            }
+
+            // Resolve the second Braid type before either load-state adapter.
+            val pagingFirstSecondViewType = onMainThread {
+                pagingFirstConcat.getItemViewType(2)
+            }
+            val localSecondViewType = onMainThread {
+                fixture.adapter.getItemViewType(1)
+            }
+            assertNotEquals(localSecondViewType, headerFirstSecondViewType)
+            assertNotEquals(localSecondViewType, pagingFirstSecondViewType)
+            assertNotEquals(headerFirstSecondViewType, pagingFirstSecondViewType)
+
+            val pagingFirstHolder = onMainThread {
+                pagingFirstConcat.createViewHolder(
+                    parent(),
+                    pagingFirstSecondViewType,
+                )
+            }
+            onMainThread {
+                pagingFirstConcat.bindViewHolder(pagingFirstHolder, 2)
+                pagingFirstConcat.onViewRecycled(pagingFirstHolder)
+            }
+
+            assertEquals(listOf(secondItem, secondItem), fixture.secondDelegate.boundItems)
+            assertEquals(2, fixture.secondDelegate.createCalls)
+            assertEquals(2, fixture.secondDelegate.recycledCalls)
+            assertTrue(fixture.firstDelegate.boundItems.isEmpty())
+        } finally {
+            owner.destroyOnMainThread()
+        }
+    }
 }
 
 private sealed interface PagingInstrumentedItem
@@ -285,6 +445,37 @@ private data class PagingFixture(
     val firstDelegate: FirstPagingDelegate,
     val secondDelegate: SecondPagingDelegate,
 )
+
+private data class PagingConcatViewTypes(
+    val header: Int,
+    val first: Int,
+    val second: Int,
+    val footer: Int,
+)
+
+private class PagingLoadStateHolder(itemView: View) :
+    RecyclerView.ViewHolder(itemView)
+
+private class AlwaysVisibleLoadStateAdapter(
+    private val kind: String,
+) : LoadStateAdapter<PagingLoadStateHolder>() {
+
+    override fun displayLoadStateAsItem(loadState: LoadState): Boolean = true
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        loadState: LoadState,
+    ): PagingLoadStateHolder = PagingLoadStateHolder(
+        View(parent.context).apply {
+            tag = kind
+        },
+    )
+
+    override fun onBindViewHolder(
+        holder: PagingLoadStateHolder,
+        loadState: LoadState,
+    ): Unit = Unit
+}
 
 private fun pagingFixture(
     firstFailedToRecycle: Boolean = false,

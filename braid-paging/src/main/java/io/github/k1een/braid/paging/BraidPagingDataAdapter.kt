@@ -77,25 +77,25 @@ public class BraidPagingDataAdapter<Item : Any>(
 
     /** Routes recycling before invoking the standard adapter callback. */
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
-        registry.onViewRecycled(holder, holder.itemViewType)
+        registry.onViewRecycled(holder)
         super.onViewRecycled(holder)
     }
 
     /** Routes attachment after invoking the standard adapter callback. */
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         super.onViewAttachedToWindow(holder)
-        registry.onViewAttachedToWindow(holder, holder.itemViewType)
+        registry.onViewAttachedToWindow(holder)
     }
 
     /** Routes detachment before invoking the standard adapter callback. */
     override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
-        registry.onViewDetachedFromWindow(holder, holder.itemViewType)
+        registry.onViewDetachedFromWindow(holder)
         super.onViewDetachedFromWindow(holder)
     }
 
     /** Combines delegate and standard adapter recycling decisions. */
     override fun onFailedToRecycleView(holder: RecyclerView.ViewHolder): Boolean {
-        val delegateResult = registry.onFailedToRecycleView(holder, holder.itemViewType)
+        val delegateResult = registry.onFailedToRecycleView(holder)
         val adapterResult = super.onFailedToRecycleView(holder)
         return delegateResult || adapterResult
     }

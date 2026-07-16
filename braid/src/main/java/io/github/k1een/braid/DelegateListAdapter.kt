@@ -60,19 +60,19 @@ public class DelegateListAdapter<Item : Any>(
 
     /** Routes the recycled lifecycle callback to the holder's delegate. */
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
-        registry.onViewRecycled(holder, holder.itemViewType)
+        registry.onViewRecycled(holder)
         super.onViewRecycled(holder)
     }
 
     /** Routes the attached lifecycle callback to the holder's delegate. */
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         super.onViewAttachedToWindow(holder)
-        registry.onViewAttachedToWindow(holder, holder.itemViewType)
+        registry.onViewAttachedToWindow(holder)
     }
 
     /** Routes the detached lifecycle callback to the holder's delegate. */
     override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
-        registry.onViewDetachedFromWindow(holder, holder.itemViewType)
+        registry.onViewDetachedFromWindow(holder)
         super.onViewDetachedFromWindow(holder)
     }
 
@@ -80,7 +80,7 @@ public class DelegateListAdapter<Item : Any>(
      * Combines the delegate result with the standard adapter recycling result.
      */
     override fun onFailedToRecycleView(holder: RecyclerView.ViewHolder): Boolean {
-        val delegateResult = registry.onFailedToRecycleView(holder, holder.itemViewType)
+        val delegateResult = registry.onFailedToRecycleView(holder)
         val adapterResult = super.onFailedToRecycleView(holder)
         return delegateResult || adapterResult
     }
