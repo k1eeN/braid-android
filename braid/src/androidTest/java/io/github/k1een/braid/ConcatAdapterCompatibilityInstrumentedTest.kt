@@ -242,7 +242,7 @@ private class SecondConcatDelegate : TrackingConcatDelegate<SecondConcatItem>(
 }
 
 private data class ConcatFixture(
-    val adapter: DelegateListAdapter<ConcatItem>,
+    val adapter: BraidListAdapter<ConcatItem>,
     val firstDelegate: FirstConcatDelegate,
     val secondDelegate: SecondConcatDelegate,
 )
@@ -264,7 +264,7 @@ private fun concatFixture(
     )
 
     return ConcatFixture(
-        adapter = onMainThread { DelegateListAdapter(registry) },
+        adapter = onMainThread { BraidListAdapter(registry) },
         firstDelegate = firstDelegate,
         secondDelegate = secondDelegate,
     )
@@ -287,7 +287,7 @@ private class ExternalHeaderAdapter :
 
 private class ExternalHeaderHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-private fun DelegateListAdapter<ConcatItem>.submitAndAwait(items: List<ConcatItem>) {
+private fun BraidListAdapter<ConcatItem>.submitAndAwait(items: List<ConcatItem>) {
     val committed = CountDownLatch(1)
 
     onMainThread {

@@ -8,8 +8,9 @@ import androidx.viewbinding.ViewBinding
  * Convenience [AdapterDelegate] for ordinary ViewBinding-backed view holders.
  *
  * Concrete delegates still define their own item identity and content diffing.
- * Delegates that need a stateful ViewHolder or specialized lifecycle handling
- * can inherit directly from [AdapterDelegate] instead.
+ * ViewBinding delegates that require holder-local state should use
+ * [StatefulViewBindingDelegate]. Delegates requiring a custom holder contract
+ * may inherit directly from [AdapterDelegate].
  *
  * @param BaseItem common item type used by the adapter.
  * @param Item item subtype handled by this delegate.

@@ -1,200 +1,85 @@
 package io.github.k1een.braid
 
-import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewbinding.ViewBinding
 
 /**
- * Transient scope used to compose delegates for Braid adapters.
+ * AndroidX [ListAdapter] that delegates item rendering and diffing to a
+ * [DelegateRegistry].
  *
- * The scope is mutable only while the adapter is being built. Braid takes a
- * defensive snapshot before creating the immutable [DelegateRegistry].
+ * The adapter relies on the standard `ListAdapter` list storage, `submitList`,
+ * and asynchronous diff calculation. It does not keep a separate item list.
  *
- * @param BaseItem common item type stored by the adapter.
+ * @param Item item type stored by this adapter.
+ * @param registry immutable registry used internally for adapter routing.
  */
-public class BraidListAdapterScope<BaseItem : Any> internal constructor() {
+public class BraidListAdapter<Item : Any>(
+    private val registry: DelegateRegistry<Item>,
+) : ListAdapter<Item, RecyclerView.ViewHolder>(registry.itemCallback) {
 
-    private val delegates = mutableListOf<
-        AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>,
-    >()
+    /** Returns the registry view type for the item at [position]. */
+    override fun getItemViewType(position: Int): Int =
+        registry.viewTypeFor(getItem(position))
 
-    /**
-     * Registers an existing [delegate] in declaration order.
-     *
-     * Use this method for reusable delegates and delegates with stateful view
-     * holders or specialized lifecycle handling.
-     */
-    public fun delegate(
-        delegate: AdapterDelegate<
-            BaseItem,
-            out BaseItem,
-            out RecyclerView.ViewHolder,
-        >,
-    ): Unit {
-        delegates += delegate
-    }
+    /** Creates a view holder through the delegate registered for [viewType]. */
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): RecyclerView.ViewHolder = registry.createViewHolder(parent, viewType)
 
-    /**
-     * Registers a type-safe ViewBinding delegate for [Item].
-     *
-     * [keySelector] defines item identity. Content comparison uses structural
-     * equality by default. [matches] can distinguish multiple representations
-     * of the same [Item] type. When RecyclerView supplies payloads,
-     * [bindPayloads] handles them when provided; otherwise [bind] performs a
-     * full bind.
-     *
-     * [matches], [keySelector], [areContentsTheSame], and [getChangePayload]
-     * must be fast, deterministic, and thread-safe because delegate resolution
-     * and diffing may run off the main thread. Stateful items should use
-     * [statefulViewBinding] or a reusable [StatefulViewBindingDelegate] through
-     * [delegate].
-     */
-    public inline fun <
-        reified Item : BaseItem,
-        VB : ViewBinding,
-        Key,
-    > viewBinding(
-        noinline inflate: (LayoutInflater, ViewGroup, Boolean) -> VB,
-        noinline keySelector: (Item) -> Key,
-        noinline matches: (Item) -> Boolean = { true },
-        noinline areContentsTheSame: (Item, Item) -> Boolean = { old, new ->
-            old == new
-        },
-        noinline getChangePayload: (Item, Item) -> Any? = { _, _ -> null },
-        noinline bindPayloads: (VB.(Item, List<Any>) -> Unit)? = null,
-        noinline bind: VB.(Item) -> Unit,
-    ): Unit {
-        delegate(
-            createViewBindingDelegate(
-                inflate = inflate,
-                matcher = { baseItem: BaseItem ->
-                    baseItem is Item && matches(baseItem)
-                },
-                keySelector = keySelector,
-                contentComparator = areContentsTheSame,
-                payloadProvider = getChangePayload,
-                payloadBinder = bindPayloads,
-                fullBinder = bind,
-            ),
-        )
-    }
+    /** Fully binds the item at [position] with an empty payload list. */
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ): Unit = registry.bindViewHolder(
+        holder = holder,
+        item = getItem(position),
+        payloads = emptyList(),
+    )
 
     /**
-     * Registers a type-safe ViewBinding delegate with holder-local [State].
-     *
-     * [stateFactory] creates state once for each ViewHolder. The same state is
-     * reused by [bind] and every lifecycle callback for that holder; it is not
-     * part of the adapter item or screen-state model. [keySelector] defines item
-     * identity. [matches], [keySelector], [areContentsTheSame], and
-     * [getChangePayload] must be fast, deterministic, and thread-safe because
-     * delegate resolution and diffing may run off the main thread.
-     *
-     * [bind], [bindPayloads], and lifecycle callbacks operate on Android views
-     * when RecyclerView invokes the corresponding adapter callbacks. Consumers
-     * must release listeners or resources in [recycle] when necessary. This API
-     * does not synchronize editable views with a ViewModel or define an input
-     * conflict policy.
+     * Partially binds the item at [position] with [payloads], or performs a full
+     * bind when [payloads] is empty.
      */
-    public inline fun <
-        reified Item : BaseItem,
-        VB : ViewBinding,
-        State : Any,
-        Key,
-    > statefulViewBinding(
-        noinline inflate: (LayoutInflater, ViewGroup, Boolean) -> VB,
-        noinline keySelector: (Item) -> Key,
-        noinline stateFactory: VB.() -> State,
-        noinline matches: (Item) -> Boolean = { true },
-        noinline areContentsTheSame: (Item, Item) -> Boolean = { old, new ->
-            old == new
-        },
-        noinline getChangePayload: (Item, Item) -> Any? = { _, _ -> null },
-        noinline bindPayloads: (VB.(Item, State, List<Any>) -> Unit)? = null,
-        noinline recycle: VB.(State) -> Unit = {},
-        noinline attachedToWindow: VB.(State) -> Unit = {},
-        noinline detachedFromWindow: VB.(State) -> Unit = {},
-        noinline failedToRecycle: VB.(State) -> Boolean = { false },
-        noinline bind: VB.(Item, State) -> Unit,
-    ): Unit {
-        delegate(
-            createStatefulViewBindingDelegate(
-                inflate = inflate,
-                matcher = { baseItem: BaseItem ->
-                    baseItem is Item && matches(baseItem)
-                },
-                keySelector = keySelector,
-                contentComparator = areContentsTheSame,
-                payloadProvider = getChangePayload,
-                stateFactory = stateFactory,
-                fullBinder = bind,
-                payloadBinder = bindPayloads,
-                recycleCallback = recycle,
-                attachedCallback = attachedToWindow,
-                detachedCallback = detachedFromWindow,
-                failedToRecycleCallback = failedToRecycle,
-            ),
-        )
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+        payloads: MutableList<Any>,
+    ) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position)
+        } else {
+            registry.bindViewHolder(
+                holder = holder,
+                item = getItem(position),
+                payloads = payloads,
+            )
+        }
     }
 
-    internal fun delegateSnapshot(): List<
-        AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>,
-    > = delegates.toList()
+    /** Routes the recycled lifecycle callback to the holder's delegate. */
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        registry.onViewRecycled(holder)
+        super.onViewRecycled(holder)
+    }
+
+    /** Routes the attached lifecycle callback to the holder's delegate. */
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        registry.onViewAttachedToWindow(holder)
+    }
+
+    /** Routes the detached lifecycle callback to the holder's delegate. */
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        registry.onViewDetachedFromWindow(holder)
+        super.onViewDetachedFromWindow(holder)
+    }
+
+    /** Combines the delegate result with the standard adapter result. */
+    override fun onFailedToRecycleView(holder: RecyclerView.ViewHolder): Boolean {
+        val delegateResult = registry.onFailedToRecycleView(holder)
+        val adapterResult = super.onFailedToRecycleView(holder)
+        return delegateResult || adapterResult
+    }
 }
-
-/**
- * Creates an immutable [DelegateRegistry] from existing [delegates].
- *
- * Delegate order is preserved in a defensive snapshot. An empty argument list
- * is rejected by the standard [DelegateRegistry] fail-fast validation.
- */
-public fun <BaseItem : Any> braidDelegateRegistry(
-    vararg delegates: AdapterDelegate<
-        BaseItem,
-        out BaseItem,
-        out RecyclerView.ViewHolder,
-    >,
-): DelegateRegistry<BaseItem> = DelegateRegistry(delegates.toList())
-
-/**
- * Creates an immutable [DelegateRegistry] from delegates declared in [block].
- *
- * The scope exists only for construction. Delegate order is preserved in a
- * defensive snapshot, and an empty block is rejected by [DelegateRegistry].
- */
-public fun <BaseItem : Any> braidDelegateRegistry(
-    block: BraidListAdapterScope<BaseItem>.() -> Unit,
-): DelegateRegistry<BaseItem> {
-    val scope = BraidListAdapterScope<BaseItem>()
-    scope.block()
-
-    return DelegateRegistry(scope.delegateSnapshot())
-}
-
-/**
- * Creates a [DelegateListAdapter] from existing [delegates].
- *
- * Delegate order is preserved. An empty argument list is rejected by the
- * standard [DelegateRegistry] fail-fast validation.
- */
-public fun <BaseItem : Any> braidListAdapter(
-    vararg delegates: AdapterDelegate<
-        BaseItem,
-        out BaseItem,
-        out RecyclerView.ViewHolder,
-    >,
-): DelegateListAdapter<BaseItem> = DelegateListAdapter(
-    registry = braidDelegateRegistry(*delegates),
-)
-
-/**
- * Creates a [DelegateListAdapter] from delegates declared in [block].
- *
- * The scope exists only for construction. Delegate order is preserved in a
- * defensive snapshot, and an empty block is rejected by [DelegateRegistry].
- */
-public fun <BaseItem : Any> braidListAdapter(
-    block: BraidListAdapterScope<BaseItem>.() -> Unit,
-): DelegateListAdapter<BaseItem> = DelegateListAdapter(
-    registry = braidDelegateRegistry(block),
-)

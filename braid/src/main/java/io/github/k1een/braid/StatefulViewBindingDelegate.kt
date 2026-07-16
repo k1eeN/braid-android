@@ -14,7 +14,7 @@ import androidx.viewbinding.ViewBinding
  * model and Braid never stores the currently bound item in the holder.
  *
  * Stateless items should use [ViewBindingDelegate] or
- * [BraidListAdapterScope.viewBinding].
+ * [BraidAdapterScope.viewBinding].
  *
  * @param BaseItem common item type used by the adapter.
  * @param Item item subtype handled by this delegate.

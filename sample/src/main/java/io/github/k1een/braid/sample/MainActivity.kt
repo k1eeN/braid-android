@@ -16,16 +16,14 @@ import io.github.k1een.braid.sample.paging.PagingSampleActivity
 
 class MainActivity : AppCompatActivity() {
 
-    private val adapter = braidListAdapter<SampleItem> {
-        viewBinding(
-            inflate = ItemSampleBinding::inflate,
-            keySelector = SampleItem::id,
-        ) { item ->
-            tvTitle.text = item.title
-            tvDescription.text = item.description
-            root.setOnClickListener {
-                onItemClick(item)
-            }
+    private val adapter = braidListAdapter(
+        inflate = ItemSampleBinding::inflate,
+        keySelector = SampleItem::id,
+    ) { item ->
+        tvTitle.text = item.title
+        tvDescription.text = item.description
+        root.setOnClickListener {
+            onItemClick(item)
         }
     }
 

@@ -250,10 +250,10 @@ private val statefulApiInflater:
         )
     }
 
-private fun statefulApiScope(): BraidListAdapterScope<StatefulApiItem> =
-    BraidListAdapterScope()
+private fun statefulApiScope(): BraidAdapterScope<StatefulApiItem> =
+    BraidAdapterScope()
 
-private fun BraidListAdapterScope<StatefulApiItem>.registerStatefulTextDelegate(
+private fun BraidAdapterScope<StatefulApiItem>.registerStatefulTextDelegate(
     matches: (StatefulApiTextItem) -> Boolean = { true },
 ) {
     statefulViewBinding(
@@ -264,10 +264,10 @@ private fun BraidListAdapterScope<StatefulApiItem>.registerStatefulTextDelegate(
     ) { _, _ -> }
 }
 
-private fun BraidListAdapterScope<StatefulApiItem>.registry():
+private fun BraidAdapterScope<StatefulApiItem>.registry():
     DelegateRegistry<StatefulApiItem> = DelegateRegistry(delegateSnapshot())
 
-private fun BraidListAdapterScope<StatefulApiItem>.callback():
+private fun BraidAdapterScope<StatefulApiItem>.callback():
     DelegateItemCallback<StatefulApiItem> = DelegateItemCallback(registry())
 
 private class ReusableStatefulTextDelegate :
