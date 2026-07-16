@@ -1,5 +1,6 @@
 package io.github.k1een.braid.sample
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ import io.github.k1een.braid.braidListAdapter
 import io.github.k1een.braid.sample.databinding.ActivityMainBinding
 import io.github.k1een.braid.sample.databinding.ItemSampleBinding
 import io.github.k1een.braid.sample.list.SampleItem
+import io.github.k1een.braid.sample.paging.PagingSampleActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,6 +44,9 @@ class MainActivity : AppCompatActivity() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
+        binding.btnOpenPagingSample.setOnClickListener {
+            startActivity(Intent(this, PagingSampleActivity::class.java))
+        }
 
         adapter.submitList(sampleItems)
     }
