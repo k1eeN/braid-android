@@ -10,15 +10,19 @@ import androidx.recyclerview.widget.RecyclerView
  * safely handled as [Item]. Braid uses this contract to keep type erasure inside
  * the library while exposing typed items and view holders to consumers.
  *
+ * Typed lifecycle APIs and their erased routing bridges intentionally remain
+ * together as one low-level contract.
+ *
  * @param BaseItem common item type used by the adapter.
  * @param Item item subtype handled by this delegate.
  * @param VH view holder type created and handled by this delegate.
  */
+@Suppress("TooManyFunctions")
 public abstract class AdapterDelegate<
     BaseItem : Any,
     Item : BaseItem,
-    VH : RecyclerView.ViewHolder,
-> {
+    VH : RecyclerView.ViewHolder
+    > {
 
     /**
      * Returns whether this delegate handles [item].
@@ -38,21 +42,14 @@ public abstract class AdapterDelegate<
      * An empty [payloads] list represents a full bind. A non-empty list is
      * passed through unchanged from RecyclerView for a partial bind.
      */
-    public abstract fun bindViewHolder(
-        holder: VH,
-        item: Item,
-        payloads: List<Any>,
-    )
+    public abstract fun bindViewHolder(holder: VH, item: Item, payloads: List<Any>)
 
     /**
      * Returns whether [oldItem] and [newItem] represent the same list item.
      *
      * This method must be fast, deterministic, and thread-safe.
      */
-    public abstract fun areItemsTheSame(
-        oldItem: Item,
-        newItem: Item,
-    ): Boolean
+    public abstract fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean
 
     /**
      * Returns whether the rendered contents of [oldItem] and [newItem] are equal.
@@ -60,10 +57,7 @@ public abstract class AdapterDelegate<
      * The default implementation uses structural equality. Overrides must be
      * fast, deterministic, and thread-safe.
      */
-    public open fun areContentsTheSame(
-        oldItem: Item,
-        newItem: Item,
-    ): Boolean = oldItem == newItem
+    public open fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean = oldItem == newItem
 
     /**
      * Returns a payload describing the visual change from [oldItem] to [newItem].
@@ -71,10 +65,7 @@ public abstract class AdapterDelegate<
      * The default implementation requests a full bind. Overrides must be fast,
      * deterministic, and thread-safe.
      */
-    public open fun getChangePayload(
-        oldItem: Item,
-        newItem: Item,
-    ): Any? = null
+    public open fun getChangePayload(oldItem: Item, newItem: Item): Any? = null
 
     /** Called when [holder] is recycled. */
     public open fun onViewRecycled(holder: VH): Unit = Unit
@@ -92,32 +83,21 @@ public abstract class AdapterDelegate<
      */
     public open fun onFailedToRecycleView(holder: VH): Boolean = false
 
-    internal fun createViewHolderErased(parent: ViewGroup): RecyclerView.ViewHolder =
-        createViewHolder(parent)
+    internal fun createViewHolderErased(parent: ViewGroup): RecyclerView.ViewHolder = createViewHolder(parent)
 
-    internal fun bindViewHolderErased(
-        holder: RecyclerView.ViewHolder,
-        item: BaseItem,
-        payloads: List<Any>,
-    ): Unit = bindViewHolder(holder.asTypedHolder(), item.asTypedItem(), payloads)
+    internal fun bindViewHolderErased(holder: RecyclerView.ViewHolder, item: BaseItem, payloads: List<Any>): Unit =
+        bindViewHolder(holder.asTypedHolder(), item.asTypedItem(), payloads)
 
-    internal fun areItemsTheSameErased(
-        oldItem: BaseItem,
-        newItem: BaseItem,
-    ): Boolean = areItemsTheSame(oldItem.asTypedItem(), newItem.asTypedItem())
+    internal fun areItemsTheSameErased(oldItem: BaseItem, newItem: BaseItem): Boolean =
+        areItemsTheSame(oldItem.asTypedItem(), newItem.asTypedItem())
 
-    internal fun areContentsTheSameErased(
-        oldItem: BaseItem,
-        newItem: BaseItem,
-    ): Boolean = areContentsTheSame(oldItem.asTypedItem(), newItem.asTypedItem())
+    internal fun areContentsTheSameErased(oldItem: BaseItem, newItem: BaseItem): Boolean =
+        areContentsTheSame(oldItem.asTypedItem(), newItem.asTypedItem())
 
-    internal fun getChangePayloadErased(
-        oldItem: BaseItem,
-        newItem: BaseItem,
-    ): Any? = getChangePayload(oldItem.asTypedItem(), newItem.asTypedItem())
+    internal fun getChangePayloadErased(oldItem: BaseItem, newItem: BaseItem): Any? =
+        getChangePayload(oldItem.asTypedItem(), newItem.asTypedItem())
 
-    internal fun onViewRecycledErased(holder: RecyclerView.ViewHolder): Unit =
-        onViewRecycled(holder.asTypedHolder())
+    internal fun onViewRecycledErased(holder: RecyclerView.ViewHolder): Unit = onViewRecycled(holder.asTypedHolder())
 
     internal fun onViewAttachedToWindowErased(holder: RecyclerView.ViewHolder): Unit =
         onViewAttachedToWindow(holder.asTypedHolder())

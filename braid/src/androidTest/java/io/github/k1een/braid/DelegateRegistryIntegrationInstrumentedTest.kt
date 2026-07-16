@@ -45,14 +45,14 @@ class DelegateRegistryIntegrationInstrumentedTest {
     @Test
     fun holderFromAnotherRegistryIsRejectedEvenWithSameLocalViewType() = onMainThread {
         val registryA = braidDelegateRegistry<RegistryIntegrationItem>(
-            RegistryIntegrationDelegate(),
+            RegistryIntegrationDelegate()
         )
         val registryB = braidDelegateRegistry<RegistryIntegrationItem>(
-            RegistryIntegrationDelegate(),
+            RegistryIntegrationDelegate()
         )
         val holder = registryA.createViewHolder(
             parent = parent(),
-            viewType = 0,
+            viewType = 0
         )
         val item = RegistryIntegrationItem(id = 1L)
 
@@ -70,7 +70,7 @@ class DelegateRegistryIntegrationInstrumentedTest {
     @Test
     fun holderCreatedOutsideRegistryIsRejectedWithIntegrationGuidance() = onMainThread {
         val registry = braidDelegateRegistry<RegistryIntegrationItem>(
-            RegistryIntegrationDelegate(),
+            RegistryIntegrationDelegate()
         )
         val holder = RegistryIntegrationHolder(View(parent().context))
 
@@ -78,7 +78,7 @@ class DelegateRegistryIntegrationInstrumentedTest {
             registry.bindViewHolder(
                 holder = holder,
                 item = RegistryIntegrationItem(id = 1L),
-                payloads = emptyList(),
+                payloads = emptyList()
             )
         }
 
@@ -91,18 +91,18 @@ class DelegateRegistryIntegrationInstrumentedTest {
         val secondDelegate = SecondRegistryMismatchDelegate()
         val registry = braidDelegateRegistry<RegistryMismatchItem>(
             firstDelegate,
-            secondDelegate,
+            secondDelegate
         )
         val holder = registry.createViewHolder(
             parent = parent(),
-            viewType = registry.viewTypeFor(FirstRegistryMismatchItem),
+            viewType = registry.viewTypeFor(FirstRegistryMismatchItem)
         )
 
         val error = assertThrows(IllegalStateException::class.java) {
             registry.bindViewHolder(
                 holder = holder,
                 item = SecondRegistryMismatchItem,
-                payloads = emptyList(),
+                payloads = emptyList()
             )
         }
         val message = error.message.orEmpty()
@@ -125,16 +125,14 @@ private object FirstRegistryMismatchItem : RegistryMismatchItem
 
 private object SecondRegistryMismatchItem : RegistryMismatchItem
 
-private class RegistryIntegrationHolder(
-    itemView: View,
-) : RecyclerView.ViewHolder(itemView)
+private class RegistryIntegrationHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
 private class RegistryIntegrationDelegate :
     AdapterDelegate<
         RegistryIntegrationItem,
         RegistryIntegrationItem,
-        RegistryIntegrationHolder,
-    >() {
+        RegistryIntegrationHolder
+        >() {
 
     var createCalls: Int = 0
     var boundItem: RegistryIntegrationItem? = null
@@ -151,11 +149,7 @@ private class RegistryIntegrationDelegate :
         return RegistryIntegrationHolder(View(parent.context))
     }
 
-    override fun bindViewHolder(
-        holder: RegistryIntegrationHolder,
-        item: RegistryIntegrationItem,
-        payloads: List<Any>,
-    ) {
+    override fun bindViewHolder(holder: RegistryIntegrationHolder, item: RegistryIntegrationItem, payloads: List<Any>) {
         boundItem = item
         boundPayloads = payloads
     }
@@ -172,62 +166,45 @@ private class RegistryIntegrationDelegate :
         detachedCalls += 1
     }
 
-    override fun onFailedToRecycleView(
-        holder: RegistryIntegrationHolder,
-    ): Boolean {
+    override fun onFailedToRecycleView(holder: RegistryIntegrationHolder): Boolean {
         failedToRecycleCalls += 1
         return true
     }
 
-    override fun areItemsTheSame(
-        oldItem: RegistryIntegrationItem,
-        newItem: RegistryIntegrationItem,
-    ): Boolean = oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: RegistryIntegrationItem, newItem: RegistryIntegrationItem): Boolean =
+        oldItem.id == newItem.id
 }
 
 private abstract class RegistryMismatchDelegate<Item : RegistryMismatchItem> :
     AdapterDelegate<
         RegistryMismatchItem,
         Item,
-        RegistryIntegrationHolder,
-    >() {
+        RegistryIntegrationHolder
+        >() {
 
     override fun createViewHolder(parent: ViewGroup): RegistryIntegrationHolder =
         RegistryIntegrationHolder(View(parent.context))
 
-    override fun bindViewHolder(
-        holder: RegistryIntegrationHolder,
-        item: Item,
-        payloads: List<Any>,
-    ): Unit = Unit
+    override fun bindViewHolder(holder: RegistryIntegrationHolder, item: Item, payloads: List<Any>): Unit = Unit
 }
 
-private class FirstRegistryMismatchDelegate :
-    RegistryMismatchDelegate<FirstRegistryMismatchItem>() {
+private class FirstRegistryMismatchDelegate : RegistryMismatchDelegate<FirstRegistryMismatchItem>() {
 
-    override fun isForItem(item: RegistryMismatchItem): Boolean =
-        item is FirstRegistryMismatchItem
+    override fun isForItem(item: RegistryMismatchItem): Boolean = item is FirstRegistryMismatchItem
 
-    override fun areItemsTheSame(
-        oldItem: FirstRegistryMismatchItem,
-        newItem: FirstRegistryMismatchItem,
-    ): Boolean = true
+    override fun areItemsTheSame(oldItem: FirstRegistryMismatchItem, newItem: FirstRegistryMismatchItem): Boolean = true
 }
 
-private class SecondRegistryMismatchDelegate :
-    RegistryMismatchDelegate<SecondRegistryMismatchItem>() {
+private class SecondRegistryMismatchDelegate : RegistryMismatchDelegate<SecondRegistryMismatchItem>() {
 
-    override fun isForItem(item: RegistryMismatchItem): Boolean =
-        item is SecondRegistryMismatchItem
+    override fun isForItem(item: RegistryMismatchItem): Boolean = item is SecondRegistryMismatchItem
 
-    override fun areItemsTheSame(
-        oldItem: SecondRegistryMismatchItem,
-        newItem: SecondRegistryMismatchItem,
-    ): Boolean = true
+    override fun areItemsTheSame(oldItem: SecondRegistryMismatchItem, newItem: SecondRegistryMismatchItem): Boolean =
+        true
 }
 
 private fun parent(): ViewGroup = FrameLayout(
-    InstrumentationRegistry.getInstrumentation().targetContext,
+    InstrumentationRegistry.getInstrumentation().targetContext
 )
 
 private fun onMainThread(block: () -> Unit) {

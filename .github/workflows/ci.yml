@@ -40,10 +40,12 @@ jobs:
       - name: Run tests and assemble
         run: |
           ./gradlew --no-daemon --stacktrace \
-            apiCheck \
+            qualityCheck \
             :braid:testDebugUnitTest \
             :braid:assembleDebug \
+            :braid:assembleDebugAndroidTest \
             :braid-paging:testDebugUnitTest \
             :braid-paging:assembleDebug \
             :braid-paging:assembleDebugAndroidTest \
+            :sample:testDebugUnitTest \
             :sample:assembleDebug

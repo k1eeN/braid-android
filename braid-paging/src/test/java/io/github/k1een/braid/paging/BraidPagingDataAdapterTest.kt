@@ -34,20 +34,20 @@ class BraidPagingDataAdapterTest {
     @Test
     fun registryItemCallbackKeepsPerDelegateDiffRules() {
         val registry = braidDelegateRegistry<PagingUnitItem>(
-            PagingUnitDelegate(),
+            PagingUnitDelegate()
         )
 
         assertTrue(
             registry.itemCallback.areItemsTheSame(
                 PagingUnitItem(id = 1L, value = "Old"),
-                PagingUnitItem(id = 1L, value = "New"),
-            ),
+                PagingUnitItem(id = 1L, value = "New")
+            )
         )
         assertFalse(
             registry.itemCallback.areContentsTheSame(
                 PagingUnitItem(id = 1L, value = "Old"),
-                PagingUnitItem(id = 1L, value = "New"),
-            ),
+                PagingUnitItem(id = 1L, value = "New")
+            )
         )
     }
 
@@ -63,7 +63,7 @@ class BraidPagingDataAdapterTest {
         val error = assertThrows(IllegalStateException::class.java) {
             requirePresentedItem<PagingUnitItem>(
                 item = null,
-                position = 7,
+                position = 7
             )
         }
 
@@ -71,38 +71,27 @@ class BraidPagingDataAdapterTest {
             "BraidPagingDataAdapter does not support Paging placeholders. " +
                 "Configure PagingConfig with enablePlaceholders = false. " +
                 "Null item at position=7.",
-            error.message,
+            error.message
         )
     }
 }
 
-private data class PagingUnitItem(
-    val id: Long,
-    val value: String,
-)
+private data class PagingUnitItem(val id: Long, val value: String)
 
 private class PagingUnitDelegate :
     AdapterDelegate<
         PagingUnitItem,
         PagingUnitItem,
-        RecyclerView.ViewHolder,
-    >() {
+        RecyclerView.ViewHolder
+        >() {
 
     override fun isForItem(item: PagingUnitItem): Boolean = true
 
-    override fun createViewHolder(parent: ViewGroup): RecyclerView.ViewHolder =
-        throw NotImplementedError(
-            "Android views are not used by local unit tests.",
-        )
+    override fun createViewHolder(parent: ViewGroup): RecyclerView.ViewHolder = throw NotImplementedError(
+        "Android views are not used by local unit tests."
+    )
 
-    override fun bindViewHolder(
-        holder: RecyclerView.ViewHolder,
-        item: PagingUnitItem,
-        payloads: List<Any>,
-    ): Unit = Unit
+    override fun bindViewHolder(holder: RecyclerView.ViewHolder, item: PagingUnitItem, payloads: List<Any>): Unit = Unit
 
-    override fun areItemsTheSame(
-        oldItem: PagingUnitItem,
-        newItem: PagingUnitItem,
-    ): Boolean = oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: PagingUnitItem, newItem: PagingUnitItem): Boolean = oldItem.id == newItem.id
 }

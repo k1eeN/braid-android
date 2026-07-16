@@ -26,13 +26,13 @@ class ConcatAdapterCompatibilityInstrumentedTest {
         val fixture = concatFixture(firstFailedToRecycle = true)
         val items = listOf<ConcatItem>(
             FirstConcatItem(id = 1L),
-            SecondConcatItem(id = 2L),
+            SecondConcatItem(id = 2L)
         )
         fixture.adapter.submitAndAwait(items)
         val concatAdapter = onMainThread {
             ConcatAdapter(
                 ExternalHeaderAdapter(),
-                fixture.adapter,
+                fixture.adapter
             )
         }
 
@@ -40,7 +40,7 @@ class ConcatAdapterCompatibilityInstrumentedTest {
             ConcatViewTypes(
                 header = concatAdapter.getItemViewType(0),
                 first = concatAdapter.getItemViewType(1),
-                second = concatAdapter.getItemViewType(2),
+                second = concatAdapter.getItemViewType(2)
             )
         }
         val localSecondViewType = onMainThread {
@@ -99,13 +99,13 @@ class ConcatAdapterCompatibilityInstrumentedTest {
         fixture.adapter.submitAndAwait(
             listOf(
                 FirstConcatItem(id = 1L),
-                secondItem,
-            ),
+                secondItem
+            )
         )
         val headerFirstConcat = onMainThread {
             ConcatAdapter(
                 ExternalHeaderAdapter(),
-                fixture.adapter,
+                fixture.adapter
             )
         }
 
@@ -125,7 +125,7 @@ class ConcatAdapterCompatibilityInstrumentedTest {
         val braidFirstConcat = onMainThread {
             ConcatAdapter(
                 ExternalHeaderAdapter(),
-                fixture.adapter,
+                fixture.adapter
             )
         }
 
@@ -166,7 +166,7 @@ private class ConcatHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
 private abstract class TrackingConcatDelegate<Item : ConcatItem>(
     private val kind: String,
-    private val failedToRecycleResult: Boolean,
+    private val failedToRecycleResult: Boolean
 ) : AdapterDelegate<ConcatItem, Item, ConcatHolder>() {
 
     var createCalls: Int = 0
@@ -182,15 +182,11 @@ private abstract class TrackingConcatDelegate<Item : ConcatItem>(
         return ConcatHolder(
             itemView = View(parent.context).apply {
                 tag = kind
-            },
+            }
         )
     }
 
-    override fun bindViewHolder(
-        holder: ConcatHolder,
-        item: Item,
-        payloads: List<Any>,
-    ) {
+    override fun bindViewHolder(holder: ConcatHolder, item: Item, payloads: List<Any>) {
         boundItems += item
         boundPayloads += payloads
     }
@@ -213,74 +209,60 @@ private abstract class TrackingConcatDelegate<Item : ConcatItem>(
     }
 }
 
-private class FirstConcatDelegate(
-    failedToRecycleResult: Boolean = false,
-) : TrackingConcatDelegate<FirstConcatItem>(
-    kind = "first",
-    failedToRecycleResult = failedToRecycleResult,
-) {
+private class FirstConcatDelegate(failedToRecycleResult: Boolean = false) :
+    TrackingConcatDelegate<FirstConcatItem>(
+        kind = "first",
+        failedToRecycleResult = failedToRecycleResult
+    ) {
 
     override fun isForItem(item: ConcatItem): Boolean = item is FirstConcatItem
 
-    override fun areItemsTheSame(
-        oldItem: FirstConcatItem,
-        newItem: FirstConcatItem,
-    ): Boolean = oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: FirstConcatItem, newItem: FirstConcatItem): Boolean = oldItem.id == newItem.id
 }
 
-private class SecondConcatDelegate : TrackingConcatDelegate<SecondConcatItem>(
-    kind = "second",
-    failedToRecycleResult = false,
-) {
+private class SecondConcatDelegate :
+    TrackingConcatDelegate<SecondConcatItem>(
+        kind = "second",
+        failedToRecycleResult = false
+    ) {
 
     override fun isForItem(item: ConcatItem): Boolean = item is SecondConcatItem
 
-    override fun areItemsTheSame(
-        oldItem: SecondConcatItem,
-        newItem: SecondConcatItem,
-    ): Boolean = oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: SecondConcatItem, newItem: SecondConcatItem): Boolean =
+        oldItem.id == newItem.id
 }
 
 private data class ConcatFixture(
     val adapter: BraidListAdapter<ConcatItem>,
     val firstDelegate: FirstConcatDelegate,
-    val secondDelegate: SecondConcatDelegate,
+    val secondDelegate: SecondConcatDelegate
 )
 
-private data class ConcatViewTypes(
-    val header: Int,
-    val first: Int,
-    val second: Int,
-)
+private data class ConcatViewTypes(val header: Int, val first: Int, val second: Int)
 
-private fun concatFixture(
-    firstFailedToRecycle: Boolean = false,
-): ConcatFixture {
+private fun concatFixture(firstFailedToRecycle: Boolean = false): ConcatFixture {
     val firstDelegate = FirstConcatDelegate(firstFailedToRecycle)
     val secondDelegate = SecondConcatDelegate()
     return ConcatFixture(
         adapter = onMainThread {
             braidListAdapter(
                 firstDelegate,
-                secondDelegate,
+                secondDelegate
             )
         },
         firstDelegate = firstDelegate,
-        secondDelegate = secondDelegate,
+        secondDelegate = secondDelegate
     )
 }
 
-private class ExternalHeaderAdapter :
-    RecyclerView.Adapter<ExternalHeaderHolder>() {
+private class ExternalHeaderAdapter : RecyclerView.Adapter<ExternalHeaderHolder>() {
 
     override fun getItemCount(): Int = 1
 
     override fun getItemViewType(position: Int): Int = 0
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ExternalHeaderHolder = ExternalHeaderHolder(View(parent.context))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExternalHeaderHolder =
+        ExternalHeaderHolder(View(parent.context))
 
     override fun onBindViewHolder(holder: ExternalHeaderHolder, position: Int): Unit = Unit
 }
@@ -298,13 +280,13 @@ private fun BraidListAdapter<ConcatItem>.submitAndAwait(items: List<ConcatItem>)
 
     assertTrue(
         "ListAdapter did not commit its list.",
-        committed.await(10L, TimeUnit.SECONDS),
+        committed.await(10L, TimeUnit.SECONDS)
     )
     InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 }
 
 private fun parent(): ViewGroup = FrameLayout(
-    InstrumentationRegistry.getInstrumentation().targetContext,
+    InstrumentationRegistry.getInstrumentation().targetContext
 )
 
 private fun <Result> onMainThread(block: () -> Result): Result {

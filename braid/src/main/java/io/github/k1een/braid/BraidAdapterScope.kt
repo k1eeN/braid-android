@@ -16,8 +16,8 @@ import androidx.viewbinding.ViewBinding
 public class BraidAdapterScope<BaseItem : Any> internal constructor() {
 
     private val delegates = mutableListOf<
-        AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>,
-    >()
+        AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>
+        >()
 
     /**
      * Registers an existing [delegate] in declaration order.
@@ -29,9 +29,9 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
         delegate: AdapterDelegate<
             BaseItem,
             out BaseItem,
-            out RecyclerView.ViewHolder,
-        >,
-    ): Unit {
+            out RecyclerView.ViewHolder
+            >
+    ) {
         delegates += delegate
     }
 
@@ -49,12 +49,15 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
      * and diffing may run off the main thread. Stateful items should use
      * [statefulViewBinding] or a reusable [StatefulViewBindingDelegate] through
      * [delegate].
+     *
+     * The DSL exposes each diff, payload, and binding policy explicitly.
      */
+    @Suppress("LongParameterList")
     public inline fun <
         reified Item : BaseItem,
         VB : ViewBinding,
-        Key,
-    > viewBinding(
+        Key
+        > viewBinding(
         noinline inflate: (LayoutInflater, ViewGroup, Boolean) -> VB,
         noinline keySelector: (Item) -> Key,
         noinline matches: (Item) -> Boolean = { true },
@@ -63,8 +66,8 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
         },
         noinline getChangePayload: (Item, Item) -> Any? = { _, _ -> null },
         noinline bindPayloads: (VB.(Item, List<Any>) -> Unit)? = null,
-        noinline bind: VB.(Item) -> Unit,
-    ): Unit {
+        noinline bind: VB.(Item) -> Unit
+    ) {
         delegate(
             createViewBindingDelegate(
                 inflate = inflate,
@@ -75,8 +78,8 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
                 contentComparator = areContentsTheSame,
                 payloadProvider = getChangePayload,
                 payloadBinder = bindPayloads,
-                fullBinder = bind,
-            ),
+                fullBinder = bind
+            )
         )
     }
 
@@ -95,13 +98,16 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
      * must release listeners or resources in [recycle] when necessary. This API
      * does not synchronize editable views with a ViewModel or define an input
      * conflict policy.
+     *
+     * Stateful holder lifecycle callbacks are explicit parts of this DSL.
      */
+    @Suppress("LongParameterList")
     public inline fun <
         reified Item : BaseItem,
         VB : ViewBinding,
         State : Any,
-        Key,
-    > statefulViewBinding(
+        Key
+        > statefulViewBinding(
         noinline inflate: (LayoutInflater, ViewGroup, Boolean) -> VB,
         noinline keySelector: (Item) -> Key,
         noinline stateFactory: VB.() -> State,
@@ -115,8 +121,8 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
         noinline attachedToWindow: VB.(State) -> Unit = {},
         noinline detachedFromWindow: VB.(State) -> Unit = {},
         noinline failedToRecycle: VB.(State) -> Boolean = { false },
-        noinline bind: VB.(Item, State) -> Unit,
-    ): Unit {
+        noinline bind: VB.(Item, State) -> Unit
+    ) {
         delegate(
             createStatefulViewBindingDelegate(
                 inflate = inflate,
@@ -132,12 +138,13 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
                 recycleCallback = recycle,
                 attachedCallback = attachedToWindow,
                 detachedCallback = detachedFromWindow,
-                failedToRecycleCallback = failedToRecycle,
-            ),
+                failedToRecycleCallback = failedToRecycle
+            )
         )
     }
 
     internal fun delegateSnapshot(): List<
-        AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>,
-    > = delegates.toList()
+        AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>
+        > =
+        delegates.toList()
 }

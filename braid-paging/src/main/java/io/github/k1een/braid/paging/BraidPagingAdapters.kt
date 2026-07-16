@@ -18,10 +18,10 @@ public fun <Item : Any> braidPagingDataAdapter(
     vararg delegates: AdapterDelegate<
         Item,
         out Item,
-        out RecyclerView.ViewHolder,
-    >,
+        out RecyclerView.ViewHolder
+        >
 ): BraidPagingDataAdapter<Item> = BraidPagingDataAdapter(
-    registry = braidDelegateRegistry(*delegates),
+    registry = braidDelegateRegistry(*delegates)
 )
 
 /**
@@ -34,7 +34,7 @@ public fun <Item : Any> braidPagingDataAdapter(
  * `enablePlaceholders = false`.
  */
 public fun <Item : Any> braidPagingDataAdapter(
-    block: BraidAdapterScope<Item>.() -> Unit,
+    block: BraidAdapterScope<Item>.() -> Unit
 ): BraidPagingDataAdapter<Item> = BraidPagingDataAdapter(
-    registry = braidDelegateRegistry(block),
+    registry = braidDelegateRegistry(block)
 )

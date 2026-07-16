@@ -29,7 +29,7 @@ class PagingSampleActivity : AppCompatActivity() {
     private val pagingAdapter = braidPagingDataAdapter<PagingSampleItem> {
         viewBinding(
             inflate = ItemPagingUserBinding::inflate,
-            keySelector = PagingSampleItem.User::id,
+            keySelector = PagingSampleItem.User::id
         ) { item ->
             tvName.text = item.name
             tvDescription.text = item.description
@@ -47,7 +47,7 @@ class PagingSampleActivity : AppCompatActivity() {
             },
             detachedFromWindow = { state ->
                 clearBannerAnimation(state)
-            },
+            }
         ) { item, state ->
             tvTitle.text = item.title
             clearBannerAnimation(state)
@@ -57,8 +57,8 @@ class PagingSampleActivity : AppCompatActivity() {
                     accent,
                     View.ALPHA,
                     1f,
-                    0.2f,
-                    1f,
+                    BANNER_START_ALPHA,
+                    1f
                 ).apply {
                     duration = BANNER_ANIMATION_DURATION_MILLIS
                     start()
@@ -79,13 +79,13 @@ class PagingSampleActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { view, insets ->
             val systemBars = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or
-                    WindowInsetsCompat.Type.displayCutout(),
+                    WindowInsetsCompat.Type.displayCutout()
             )
             view.setPadding(
                 systemBars.left,
                 systemBars.top,
                 systemBars.right,
-                systemBars.bottom,
+                systemBars.bottom
             )
             insets
         }
@@ -103,7 +103,7 @@ class PagingSampleActivity : AppCompatActivity() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = pagingAdapter.withLoadStateHeaderAndFooter(
             header = PagingLoadStateAdapter(pagingAdapter::retry),
-            footer = PagingLoadStateAdapter(pagingAdapter::retry),
+            footer = PagingLoadStateAdapter(pagingAdapter::retry)
         )
 
         collectPagingData()
@@ -141,9 +141,7 @@ class PagingSampleActivity : AppCompatActivity() {
         binding.btnRefresh.isEnabled = refresh !is LoadState.Loading
     }
 
-    private fun ItemPagingBannerBinding.clearBannerAnimation(
-        state: BannerState,
-    ) {
+    private fun ItemPagingBannerBinding.clearBannerAnimation(state: BannerState) {
         state.animation?.cancel()
         state.animation = null
         accent.alpha = 1f
@@ -151,9 +149,8 @@ class PagingSampleActivity : AppCompatActivity() {
 
     private companion object {
         const val BANNER_ANIMATION_DURATION_MILLIS: Long = 600L
+        const val BANNER_START_ALPHA: Float = 0.2f
     }
 }
 
-private class BannerState(
-    var animation: ObjectAnimator? = null,
-)
+private class BannerState(var animation: ObjectAnimator? = null)

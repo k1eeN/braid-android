@@ -13,12 +13,16 @@ import androidx.recyclerview.widget.RecyclerView
  * routing methods are intended for advanced adapter integrations that need to
  * share this registry's diff and delegate routing rules.
  *
+ * Advanced adapters intentionally use this single routing facade for diffing
+ * and every holder lifecycle event.
+ *
  * @param BaseItem common item type used by the adapter.
  * @param delegates delegates available to the adapter.
  * @throws IllegalArgumentException when [delegates] is empty.
  */
+@Suppress("TooManyFunctions")
 public class DelegateRegistry<BaseItem : Any> internal constructor(
-    delegates: List<AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>>,
+    delegates: List<AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>>
 ) {
 
     init {
@@ -31,7 +35,7 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
         delegates.mapIndexed { viewType, delegate ->
             RegisteredDelegate(
                 viewType = viewType,
-                delegate = delegate,
+                delegate = delegate
             )
         }
 
@@ -86,7 +90,7 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
         registeredDelegates.getOrNull(viewType)
             ?: throw IllegalStateException(
                 "No delegate is registered for viewType=$viewType. " +
-                    "Registered viewTypes: ${registeredDelegates.map { it.viewType }}.",
+                    "Registered viewTypes: ${registeredDelegates.map { it.viewType }}."
             )
 
     /**
@@ -94,10 +98,7 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      *
      * This method is intended for advanced adapter integrations.
      */
-    public fun createViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): RecyclerView.ViewHolder {
+    public fun createViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val holder = registeredDelegateFor(viewType)
             .delegate
             .createViewHolderErased(parent)
@@ -106,8 +107,8 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
             R.id.braid_internal_delegate_route,
             HolderRoute(
                 ownerToken = ownerToken,
-                localViewType = viewType,
-            ),
+                localViewType = viewType
+            )
         )
 
         return holder
@@ -120,11 +121,7 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      * list represents a full bind. Routing is independent of the holder's
      * externally visible view type, which may be isolated by a parent adapter.
      */
-    public fun bindViewHolder(
-        holder: RecyclerView.ViewHolder,
-        item: BaseItem,
-        payloads: List<Any>,
-    ) {
+    public fun bindViewHolder(holder: RecyclerView.ViewHolder, item: BaseItem, payloads: List<Any>) {
         val route = holderRoute(holder)
         val holderDelegate = registeredDelegateFor(route.localViewType)
         val itemDelegate = resolve(item)
@@ -144,11 +141,10 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      * This method is intended for advanced adapter integrations. The holder
      * must originate from [createViewHolder].
      */
-    public fun onViewRecycled(
-        holder: RecyclerView.ViewHolder,
-    ): Unit = registeredDelegateFor(holderRoute(holder).localViewType)
-        .delegate
-        .onViewRecycledErased(holder)
+    public fun onViewRecycled(holder: RecyclerView.ViewHolder): Unit =
+        registeredDelegateFor(holderRoute(holder).localViewType)
+            .delegate
+            .onViewRecycledErased(holder)
 
     /**
      * Routes attachment to the delegate that created [holder].
@@ -156,11 +152,10 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      * This method is intended for advanced adapter integrations. The holder
      * must originate from [createViewHolder].
      */
-    public fun onViewAttachedToWindow(
-        holder: RecyclerView.ViewHolder,
-    ): Unit = registeredDelegateFor(holderRoute(holder).localViewType)
-        .delegate
-        .onViewAttachedToWindowErased(holder)
+    public fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder): Unit =
+        registeredDelegateFor(holderRoute(holder).localViewType)
+            .delegate
+            .onViewAttachedToWindowErased(holder)
 
     /**
      * Routes detachment to the delegate that created [holder].
@@ -168,11 +163,10 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      * This method is intended for advanced adapter integrations. The holder
      * must originate from [createViewHolder].
      */
-    public fun onViewDetachedFromWindow(
-        holder: RecyclerView.ViewHolder,
-    ): Unit = registeredDelegateFor(holderRoute(holder).localViewType)
-        .delegate
-        .onViewDetachedFromWindowErased(holder)
+    public fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder): Unit =
+        registeredDelegateFor(holderRoute(holder).localViewType)
+            .delegate
+            .onViewDetachedFromWindowErased(holder)
 
     /**
      * Returns the recycling decision from the delegate that created [holder].
@@ -181,58 +175,53 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      * must originate from [createViewHolder]. Adapter integrations should
      * combine this decision with their superclass result.
      */
-    public fun onFailedToRecycleView(
-        holder: RecyclerView.ViewHolder,
-    ): Boolean = registeredDelegateFor(holderRoute(holder).localViewType)
-        .delegate
-        .onFailedToRecycleViewErased(holder)
+    public fun onFailedToRecycleView(holder: RecyclerView.ViewHolder): Boolean =
+        registeredDelegateFor(holderRoute(holder).localViewType)
+            .delegate
+            .onFailedToRecycleViewErased(holder)
 
     internal fun areItemsTheSame(
         registeredDelegate: RegisteredDelegate<BaseItem>,
         oldItem: BaseItem,
-        newItem: BaseItem,
+        newItem: BaseItem
     ): Boolean = registeredDelegate.delegate.areItemsTheSameErased(oldItem, newItem)
 
     internal fun areContentsTheSame(
         registeredDelegate: RegisteredDelegate<BaseItem>,
         oldItem: BaseItem,
-        newItem: BaseItem,
+        newItem: BaseItem
     ): Boolean = registeredDelegate.delegate.areContentsTheSameErased(oldItem, newItem)
 
     internal fun getChangePayload(
         registeredDelegate: RegisteredDelegate<BaseItem>,
         oldItem: BaseItem,
-        newItem: BaseItem,
+        newItem: BaseItem
     ): Any? = registeredDelegate.delegate.getChangePayloadErased(oldItem, newItem)
 
     private fun noMatchingDelegateMessage(item: BaseItem): String =
         "No delegate matches item type ${item.javaClass.name}. " +
             "Registered delegates: ${registeredDelegateNames(registeredDelegates)}."
 
-    private fun multipleDelegatesMessage(
-        item: BaseItem,
-        matches: List<RegisteredDelegate<BaseItem>>,
-    ): String =
+    private fun multipleDelegatesMessage(item: BaseItem, matches: List<RegisteredDelegate<BaseItem>>): String =
         "Multiple delegates match item type ${item.javaClass.name}. " +
             "Matching delegates: ${registeredDelegateNames(matches)}. " +
             "Registered delegates: ${registeredDelegateNames(registeredDelegates)}."
 
-    private fun registeredDelegateNames(
-        delegates: List<RegisteredDelegate<BaseItem>>,
-    ): List<String> = delegates.map { registeredDelegate ->
-        "viewType=${registeredDelegate.viewType}:${registeredDelegate.delegate.javaClass.name}"
-    }
+    private fun registeredDelegateNames(delegates: List<RegisteredDelegate<BaseItem>>): List<String> =
+        delegates.map { registeredDelegate ->
+            "viewType=${registeredDelegate.viewType}:${registeredDelegate.delegate.javaClass.name}"
+        }
 
     private fun holderRoute(holder: RecyclerView.ViewHolder): HolderRoute {
         val route = holder.itemView.getTag(
-            R.id.braid_internal_delegate_route,
+            R.id.braid_internal_delegate_route
         ) as? HolderRoute
 
         if (route == null || route.ownerToken !== ownerToken) {
             throw IllegalStateException(
                 "ViewHolder was not created by this DelegateRegistry. " +
                     "Braid adapters must create holders through " +
-                    "DelegateRegistry.createViewHolder().",
+                    "DelegateRegistry.createViewHolder()."
             )
         }
 
@@ -240,12 +229,9 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
     }
 }
 
-private class HolderRoute(
-    val ownerToken: Any,
-    val localViewType: Int,
-)
+private class HolderRoute(val ownerToken: Any, val localViewType: Int)
 
 internal class RegisteredDelegate<BaseItem : Any>(
     val viewType: Int,
-    val delegate: AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>,
+    val delegate: AdapterDelegate<BaseItem, out BaseItem, out RecyclerView.ViewHolder>
 )

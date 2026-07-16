@@ -44,13 +44,13 @@ class PagingSampleSourceTest {
         val firstPage = source.loadPage(refresh())
         source.loadError(append(PagingSampleSource.DEMO_FAILURE_KEY))
         val secondPage = source.loadPage(
-            append(PagingSampleSource.DEMO_FAILURE_KEY),
+            append(PagingSampleSource.DEMO_FAILURE_KEY)
         )
         val state = PagingState(
             pages = listOf(firstPage, secondPage),
             anchorPosition = 25,
             config = pagingConfig(),
-            leadingPlaceholderCount = 0,
+            leadingPlaceholderCount = 0
         )
 
         assertEquals(20, source.getRefreshKey(state))
@@ -60,9 +60,9 @@ class PagingSampleSourceTest {
                     pages = listOf(firstPage),
                     anchorPosition = null,
                     config = pagingConfig(),
-                    leadingPlaceholderCount = 0,
-                ),
-            ),
+                    leadingPlaceholderCount = 0
+                )
+            )
         )
     }
 
@@ -99,10 +99,10 @@ class PagingSampleSourceTest {
         val source = source()
 
         val refreshPage = source.loadPage(
-            refresh(key = PagingSampleSource.DEMO_FAILURE_KEY),
+            refresh(key = PagingSampleSource.DEMO_FAILURE_KEY)
         )
         val appendFailure = source.loadError(
-            append(PagingSampleSource.DEMO_FAILURE_KEY),
+            append(PagingSampleSource.DEMO_FAILURE_KEY)
         )
 
         assertEquals(21L, refreshPage.data.first().testId)
@@ -127,7 +127,7 @@ class PagingSampleSourceTest {
             pages = listOf(page),
             anchorPosition = 30,
             config = pagingConfig(),
-            leadingPlaceholderCount = 0,
+            leadingPlaceholderCount = 0
         )
 
         assertEquals(60, page.data.size)
@@ -136,56 +136,55 @@ class PagingSampleSourceTest {
         assertFalse(page.data.isEmpty())
     }
 
-    private fun source(): PagingSampleSource =
-        PagingSampleSource(loadDelayMillis = 0L)
+    private fun source(): PagingSampleSource = PagingSampleSource(loadDelayMillis = 0L)
 
     private fun pagingConfig(): PagingConfig = PagingConfig(
         pageSize = PagingSampleSource.PAGE_SIZE,
         initialLoadSize = PagingSampleSource.PAGE_SIZE,
-        enablePlaceholders = false,
+        enablePlaceholders = false
     )
 
     private fun refresh(
         key: Int? = null,
-        loadSize: Int = PagingSampleSource.PAGE_SIZE,
+        loadSize: Int = PagingSampleSource.PAGE_SIZE
     ): PagingSource.LoadParams.Refresh<Int> = PagingSource.LoadParams.Refresh(
         key = key,
         loadSize = loadSize,
-        placeholdersEnabled = false,
+        placeholdersEnabled = false
     )
 
-    private fun append(
-        key: Int,
-    ): PagingSource.LoadParams.Append<Int> = PagingSource.LoadParams.Append(
+    private fun append(key: Int): PagingSource.LoadParams.Append<Int> = PagingSource.LoadParams.Append(
         key = key,
         loadSize = PagingSampleSource.PAGE_SIZE,
-        placeholdersEnabled = false,
+        placeholdersEnabled = false
     )
 
     private suspend fun PagingSampleSource.loadPage(
-        params: PagingSource.LoadParams<Int>,
-    ): PagingSource.LoadResult.Page<Int, PagingSampleItem> =
-        when (val result = load(params)) {
-            is PagingSource.LoadResult.Page -> result
-            is PagingSource.LoadResult.Error -> {
-                throw AssertionError("Expected Page, got Error", result.throwable)
-            }
-            is PagingSource.LoadResult.Invalid -> {
-                throw AssertionError("Expected Page, got Invalid")
-            }
+        params: PagingSource.LoadParams<Int>
+    ): PagingSource.LoadResult.Page<Int, PagingSampleItem> = when (val result = load(params)) {
+        is PagingSource.LoadResult.Page -> result
+
+        is PagingSource.LoadResult.Error -> {
+            throw AssertionError("Expected Page, got Error", result.throwable)
         }
 
-    private suspend fun PagingSampleSource.loadError(
-        params: PagingSource.LoadParams<Int>,
-    ): Throwable = when (val result = load(params)) {
-        is PagingSource.LoadResult.Error -> result.throwable
-        is PagingSource.LoadResult.Page -> {
-            throw AssertionError("Expected Error, got Page")
-        }
         is PagingSource.LoadResult.Invalid -> {
-            throw AssertionError("Expected Error, got Invalid")
+            throw AssertionError("Expected Page, got Invalid")
         }
     }
+
+    private suspend fun PagingSampleSource.loadError(params: PagingSource.LoadParams<Int>): Throwable =
+        when (val result = load(params)) {
+            is PagingSource.LoadResult.Error -> result.throwable
+
+            is PagingSource.LoadResult.Page -> {
+                throw AssertionError("Expected Error, got Page")
+            }
+
+            is PagingSource.LoadResult.Invalid -> {
+                throw AssertionError("Expected Error, got Invalid")
+            }
+        }
 
     private val PagingSampleItem.testId: Long
         get() = when (this) {

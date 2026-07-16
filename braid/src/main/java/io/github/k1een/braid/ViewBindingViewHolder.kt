@@ -11,6 +11,5 @@ import androidx.viewbinding.ViewBinding
  *
  * @param VB concrete ViewBinding type owned by this holder.
  */
-public class ViewBindingViewHolder<VB : ViewBinding> internal constructor(
-    internal val binding: VB,
-) : RecyclerView.ViewHolder(binding.root)
+public class ViewBindingViewHolder<VB : ViewBinding> internal constructor(internal val binding: VB) :
+    RecyclerView.ViewHolder(binding.root)

@@ -20,32 +20,26 @@ import androidx.viewbinding.ViewBinding
 public abstract class ViewBindingDelegate<
     BaseItem : Any,
     Item : BaseItem,
-    VB : ViewBinding,
->(
-    private val inflate: (LayoutInflater, ViewGroup, Boolean) -> VB,
+    VB : ViewBinding
+    >(
+    private val inflate: (LayoutInflater, ViewGroup, Boolean) -> VB
 ) : AdapterDelegate<
     BaseItem,
     Item,
-    ViewBindingViewHolder<VB>,
->() {
+    ViewBindingViewHolder<VB>
+    >() {
 
-    final override fun createViewHolder(
-        parent: ViewGroup,
-    ): ViewBindingViewHolder<VB> {
+    final override fun createViewHolder(parent: ViewGroup): ViewBindingViewHolder<VB> {
         val layoutInflater = LayoutInflater.from(parent.context)
         val binding = inflate(layoutInflater, parent, false)
         return ViewBindingViewHolder(binding)
     }
 
-    final override fun bindViewHolder(
-        holder: ViewBindingViewHolder<VB>,
-        item: Item,
-        payloads: List<Any>,
-    ) {
+    final override fun bindViewHolder(holder: ViewBindingViewHolder<VB>, item: Item, payloads: List<Any>) {
         bind(
             binding = holder.binding,
             item = item,
-            payloads = payloads,
+            payloads = payloads
         )
     }
 
@@ -55,9 +49,5 @@ public abstract class ViewBindingDelegate<
      * An empty [payloads] list represents a full bind. Non-empty payloads are
      * forwarded unchanged from RecyclerView.
      */
-    protected abstract fun bind(
-        binding: VB,
-        item: Item,
-        payloads: List<Any>,
-    )
+    protected abstract fun bind(binding: VB, item: Item, payloads: List<Any>)
 }

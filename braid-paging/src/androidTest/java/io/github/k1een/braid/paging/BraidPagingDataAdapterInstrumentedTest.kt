@@ -40,7 +40,7 @@ class BraidPagingDataAdapterInstrumentedTest {
     fun varargAndDslFactoriesCreatePagingAdapters() = onMainThread {
         val varargAdapter = braidPagingDataAdapter<PagingInstrumentedItem>(
             FirstPagingDelegate(),
-            SecondPagingDelegate(),
+            SecondPagingDelegate()
         )
         val dslAdapter = braidPagingDataAdapter<PagingInstrumentedItem> {
             delegate(FirstPagingDelegate())
@@ -56,7 +56,7 @@ class BraidPagingDataAdapterInstrumentedTest {
         val fixture = pagingFixture()
         val items = listOf<PagingInstrumentedItem>(
             FirstPagingItem(id = 1L, value = "First"),
-            SecondPagingItem(id = 2L, value = "Second"),
+            SecondPagingItem(id = 2L, value = "Second")
         )
         val owner = fixture.adapter.submitAndAwait(items)
 
@@ -115,7 +115,7 @@ class BraidPagingDataAdapterInstrumentedTest {
                 fixture.adapter.onBindViewHolder(
                     holder,
                     0,
-                    mutableListOf(),
+                    mutableListOf()
                 )
                 fixture.adapter.onBindViewHolder(holder, 0, payloads)
                 fixture.adapter.onViewAttachedToWindow(holder)
@@ -149,7 +149,7 @@ class BraidPagingDataAdapterInstrumentedTest {
         val (owner, loadStates) = runBlocking {
             val loadStates = async(
                 context = Dispatchers.Default,
-                start = CoroutineStart.UNDISPATCHED,
+                start = CoroutineStart.UNDISPATCHED
             ) {
                 withTimeout(10_000L) {
                     fixture.adapter.loadStateFlow.first { states ->
@@ -160,7 +160,7 @@ class BraidPagingDataAdapterInstrumentedTest {
                 }
             }
             val owner = fixture.adapter.submitAndAwait(
-                listOf(FirstPagingItem(id = 1L, value = "First")),
+                listOf(FirstPagingItem(id = 1L, value = "First"))
             )
 
             owner to loadStates.await()
@@ -170,7 +170,7 @@ class BraidPagingDataAdapterInstrumentedTest {
             val refresh = loadStates.source.refresh
             assertTrue(
                 refresh is LoadState.NotLoading &&
-                    refresh.endOfPaginationReached,
+                    refresh.endOfPaginationReached
             )
             assertFalse(onMainThread { fixture.adapter.snapshot().isEmpty() })
         } finally {
@@ -178,12 +178,14 @@ class BraidPagingDataAdapterInstrumentedTest {
         }
     }
 
+    // Keep the complete low-level ConcatAdapter route and lifecycle sequence visible in one regression test.
+    @Suppress("LongMethod")
     @Test
     fun loadStateCompositionRoutesBindPayloadLifecycleAndRecycledHolder() {
         val fixture = pagingFixture(firstFailedToRecycle = true)
         val items = listOf<PagingInstrumentedItem>(
             FirstPagingItem(id = 1L, value = "First"),
-            SecondPagingItem(id = 2L, value = "Second"),
+            SecondPagingItem(id = 2L, value = "Second")
         )
         val owner = fixture.adapter.submitAndAwait(items)
 
@@ -191,7 +193,7 @@ class BraidPagingDataAdapterInstrumentedTest {
             val concatAdapter = onMainThread {
                 fixture.adapter.withLoadStateHeaderAndFooter(
                     header = AlwaysVisibleLoadStateAdapter("header"),
-                    footer = AlwaysVisibleLoadStateAdapter("footer"),
+                    footer = AlwaysVisibleLoadStateAdapter("footer")
                 )
             }
             val viewTypes = onMainThread {
@@ -199,7 +201,7 @@ class BraidPagingDataAdapterInstrumentedTest {
                     header = concatAdapter.getItemViewType(0),
                     first = concatAdapter.getItemViewType(1),
                     second = concatAdapter.getItemViewType(2),
-                    footer = concatAdapter.getItemViewType(3),
+                    footer = concatAdapter.getItemViewType(3)
                 )
             }
             val localFirstViewType = onMainThread {
@@ -262,6 +264,8 @@ class BraidPagingDataAdapterInstrumentedTest {
         }
     }
 
+    // The allocation-order regression is one indivisible low-level view-type routing scenario.
+    @Suppress("LongMethod")
     @Test
     fun recreatedLoadStateCompositionCanAllocateGlobalTypesInAnotherOrder() {
         val fixture = pagingFixture()
@@ -269,15 +273,15 @@ class BraidPagingDataAdapterInstrumentedTest {
         val owner = fixture.adapter.submitAndAwait(
             listOf(
                 FirstPagingItem(id = 1L, value = "First"),
-                secondItem,
-            ),
+                secondItem
+            )
         )
 
         try {
             val headerFirstConcat = onMainThread {
                 fixture.adapter.withLoadStateHeaderAndFooter(
                     header = AlwaysVisibleLoadStateAdapter("header"),
-                    footer = AlwaysVisibleLoadStateAdapter("footer"),
+                    footer = AlwaysVisibleLoadStateAdapter("footer")
                 )
             }
 
@@ -289,7 +293,7 @@ class BraidPagingDataAdapterInstrumentedTest {
             val headerFirstHolder = onMainThread {
                 headerFirstConcat.createViewHolder(
                     parent(),
-                    headerFirstSecondViewType,
+                    headerFirstSecondViewType
                 )
             }
             onMainThread {
@@ -300,7 +304,7 @@ class BraidPagingDataAdapterInstrumentedTest {
             val pagingFirstConcat = onMainThread {
                 fixture.adapter.withLoadStateHeaderAndFooter(
                     header = AlwaysVisibleLoadStateAdapter("header"),
-                    footer = AlwaysVisibleLoadStateAdapter("footer"),
+                    footer = AlwaysVisibleLoadStateAdapter("footer")
                 )
             }
 
@@ -318,7 +322,7 @@ class BraidPagingDataAdapterInstrumentedTest {
             val pagingFirstHolder = onMainThread {
                 pagingFirstConcat.createViewHolder(
                     parent(),
-                    pagingFirstSecondViewType,
+                    pagingFirstSecondViewType
                 )
             }
             onMainThread {
@@ -338,28 +342,20 @@ class BraidPagingDataAdapterInstrumentedTest {
 
 private sealed interface PagingInstrumentedItem
 
-private data class FirstPagingItem(
-    val id: Long,
-    val value: String,
-) : PagingInstrumentedItem
+private data class FirstPagingItem(val id: Long, val value: String) : PagingInstrumentedItem
 
-private data class SecondPagingItem(
-    val id: Long,
-    val value: String,
-) : PagingInstrumentedItem
+private data class SecondPagingItem(val id: Long, val value: String) : PagingInstrumentedItem
 
-private class PagingInstrumentedHolder(
-    itemView: View,
-) : RecyclerView.ViewHolder(itemView)
+private class PagingInstrumentedHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
 private abstract class TrackingPagingDelegate<Item : PagingInstrumentedItem>(
     private val kind: String,
-    private val failedToRecycleResult: Boolean,
+    private val failedToRecycleResult: Boolean
 ) : AdapterDelegate<
     PagingInstrumentedItem,
     Item,
-    PagingInstrumentedHolder,
->() {
+    PagingInstrumentedHolder
+    >() {
 
     var createCalls: Int = 0
     val boundItems: MutableList<Item> = mutableListOf()
@@ -375,15 +371,11 @@ private abstract class TrackingPagingDelegate<Item : PagingInstrumentedItem>(
             tag = kind
         }
         return PagingInstrumentedHolder(
-            itemView = itemView,
+            itemView = itemView
         )
     }
 
-    override fun bindViewHolder(
-        holder: PagingInstrumentedHolder,
-        item: Item,
-        payloads: List<Any>,
-    ) {
+    override fun bindViewHolder(holder: PagingInstrumentedHolder, item: Item, payloads: List<Any>) {
         boundItems += item
         boundPayloads += payloads
     }
@@ -400,96 +392,71 @@ private abstract class TrackingPagingDelegate<Item : PagingInstrumentedItem>(
         detachedCalls += 1
     }
 
-    override fun onFailedToRecycleView(
-        holder: PagingInstrumentedHolder,
-    ): Boolean {
+    override fun onFailedToRecycleView(holder: PagingInstrumentedHolder): Boolean {
         failedToRecycleCalls += 1
         return failedToRecycleResult
     }
 }
 
-private class FirstPagingDelegate(
-    failedToRecycleResult: Boolean = false,
-) : TrackingPagingDelegate<FirstPagingItem>(
-    kind = "first",
-    failedToRecycleResult = failedToRecycleResult,
-) {
+private class FirstPagingDelegate(failedToRecycleResult: Boolean = false) :
+    TrackingPagingDelegate<FirstPagingItem>(
+        kind = "first",
+        failedToRecycleResult = failedToRecycleResult
+    ) {
 
-    override fun isForItem(item: PagingInstrumentedItem): Boolean =
-        item is FirstPagingItem
+    override fun isForItem(item: PagingInstrumentedItem): Boolean = item is FirstPagingItem
 
-    override fun areItemsTheSame(
-        oldItem: FirstPagingItem,
-        newItem: FirstPagingItem,
-    ): Boolean = oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: FirstPagingItem, newItem: FirstPagingItem): Boolean = oldItem.id == newItem.id
 }
 
 private class SecondPagingDelegate :
     TrackingPagingDelegate<SecondPagingItem>(
         kind = "second",
-        failedToRecycleResult = false,
+        failedToRecycleResult = false
     ) {
 
-    override fun isForItem(item: PagingInstrumentedItem): Boolean =
-        item is SecondPagingItem
+    override fun isForItem(item: PagingInstrumentedItem): Boolean = item is SecondPagingItem
 
-    override fun areItemsTheSame(
-        oldItem: SecondPagingItem,
-        newItem: SecondPagingItem,
-    ): Boolean = oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: SecondPagingItem, newItem: SecondPagingItem): Boolean =
+        oldItem.id == newItem.id
 }
 
 private data class PagingFixture(
     val adapter: BraidPagingDataAdapter<PagingInstrumentedItem>,
     val firstDelegate: FirstPagingDelegate,
-    val secondDelegate: SecondPagingDelegate,
+    val secondDelegate: SecondPagingDelegate
 )
 
-private data class PagingConcatViewTypes(
-    val header: Int,
-    val first: Int,
-    val second: Int,
-    val footer: Int,
-)
+private data class PagingConcatViewTypes(val header: Int, val first: Int, val second: Int, val footer: Int)
 
-private class PagingLoadStateHolder(itemView: View) :
-    RecyclerView.ViewHolder(itemView)
+private class PagingLoadStateHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-private class AlwaysVisibleLoadStateAdapter(
-    private val kind: String,
-) : LoadStateAdapter<PagingLoadStateHolder>() {
+private class AlwaysVisibleLoadStateAdapter(private val kind: String) : LoadStateAdapter<PagingLoadStateHolder>() {
 
     override fun displayLoadStateAsItem(loadState: LoadState): Boolean = true
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        loadState: LoadState,
-    ): PagingLoadStateHolder = PagingLoadStateHolder(
-        View(parent.context).apply {
-            tag = kind
-        },
-    )
+    override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): PagingLoadStateHolder =
+        PagingLoadStateHolder(
+            View(parent.context).apply {
+                tag = kind
+            }
+        )
 
-    override fun onBindViewHolder(
-        holder: PagingLoadStateHolder,
-        loadState: LoadState,
-    ): Unit = Unit
+    override fun onBindViewHolder(holder: PagingLoadStateHolder, loadState: LoadState): Unit = Unit
 }
 
-private fun pagingFixture(
-    firstFailedToRecycle: Boolean = false,
-): PagingFixture {
+private fun pagingFixture(firstFailedToRecycle: Boolean = false): PagingFixture {
     val firstDelegate = FirstPagingDelegate(firstFailedToRecycle)
     val secondDelegate = SecondPagingDelegate()
     return PagingFixture(
         adapter = onMainThread {
             braidPagingDataAdapter(
                 firstDelegate,
-                secondDelegate,
+                secondDelegate
             )
         },
         firstDelegate = firstDelegate,
-        secondDelegate = secondDelegate,
+        secondDelegate = secondDelegate
     )
 }
 
@@ -510,7 +477,7 @@ private class PagingTestLifecycleOwner : LifecycleOwner {
 }
 
 private fun BraidPagingDataAdapter<PagingInstrumentedItem>.submitAndAwait(
-    items: List<PagingInstrumentedItem>,
+    items: List<PagingInstrumentedItem>
 ): PagingTestLifecycleOwner {
     val owner = onMainThread { PagingTestLifecycleOwner() }
     val updated = CountDownLatch(1)
@@ -525,23 +492,23 @@ private fun BraidPagingDataAdapter<PagingInstrumentedItem>.submitAndAwait(
                 data = items,
                 sourceLoadStates = LoadStates(
                     refresh = LoadState.NotLoading(
-                        endOfPaginationReached = true,
+                        endOfPaginationReached = true
                     ),
                     prepend = LoadState.NotLoading(
-                        endOfPaginationReached = true,
+                        endOfPaginationReached = true
                     ),
                     append = LoadState.NotLoading(
-                        endOfPaginationReached = true,
-                    ),
-                ),
-            ),
+                        endOfPaginationReached = true
+                    )
+                )
+            )
         )
     }
 
     try {
         assertTrue(
             "PagingData was not presented.",
-            updated.await(10L, TimeUnit.SECONDS),
+            updated.await(10L, TimeUnit.SECONDS)
         )
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
     } finally {
@@ -560,7 +527,7 @@ private fun PagingTestLifecycleOwner.destroyOnMainThread() {
 }
 
 private fun parent(): ViewGroup = FrameLayout(
-    InstrumentationRegistry.getInstrumentation().targetContext,
+    InstrumentationRegistry.getInstrumentation().targetContext
 )
 
 private fun <Result> onMainThread(block: () -> Result): Result {

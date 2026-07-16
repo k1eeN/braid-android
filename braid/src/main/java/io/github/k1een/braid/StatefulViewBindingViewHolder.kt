@@ -15,8 +15,8 @@ import androidx.viewbinding.ViewBinding
  */
 public class StatefulViewBindingViewHolder<
     VB : ViewBinding,
-    State : Any,
-> internal constructor(
+    State : Any
+    > internal constructor(
     internal val binding: VB,
-    internal val state: State,
+    internal val state: State
 ) : RecyclerView.ViewHolder(binding.root)

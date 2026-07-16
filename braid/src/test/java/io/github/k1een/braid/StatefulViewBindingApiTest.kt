@@ -20,7 +20,7 @@ class StatefulViewBindingApiTest {
         scope.registerStatefulTextDelegate()
 
         val resolved = scope.registry().resolve(
-            StatefulApiTextItem(id = 1L, text = "Text"),
+            StatefulApiTextItem(id = 1L, text = "Text")
         )
 
         assertEquals(0, resolved.viewType)
@@ -33,7 +33,7 @@ class StatefulViewBindingApiTest {
 
         assertThrows(IllegalStateException::class.java) {
             scope.registry().resolve(
-                StatefulApiChoiceItem(id = 1L, title = "Choice"),
+                StatefulApiChoiceItem(id = 1L, title = "Choice")
             )
         }
     }
@@ -48,14 +48,14 @@ class StatefulViewBindingApiTest {
         assertEquals(
             0,
             registry.viewTypeFor(
-                StatefulApiTextItem(id = 1L, text = "Text", isExpanded = false),
-            ),
+                StatefulApiTextItem(id = 1L, text = "Text", isExpanded = false)
+            )
         )
         assertEquals(
             1,
             registry.viewTypeFor(
-                StatefulApiTextItem(id = 1L, text = "Text", isExpanded = true),
-            ),
+                StatefulApiTextItem(id = 1L, text = "Text", isExpanded = true)
+            )
         )
     }
 
@@ -66,14 +66,14 @@ class StatefulViewBindingApiTest {
         assertTrue(
             callback.areItemsTheSame(
                 StatefulApiTextItem(id = 1L, text = "Old"),
-                StatefulApiTextItem(id = 1L, text = "New"),
-            ),
+                StatefulApiTextItem(id = 1L, text = "New")
+            )
         )
         assertFalse(
             callback.areItemsTheSame(
                 StatefulApiTextItem(id = 1L, text = "Text"),
-                StatefulApiTextItem(id = 2L, text = "Text"),
-            ),
+                StatefulApiTextItem(id = 2L, text = "Text")
+            )
         )
     }
 
@@ -84,14 +84,14 @@ class StatefulViewBindingApiTest {
         assertTrue(
             callback.areContentsTheSame(
                 StatefulApiTextItem(id = 1L, text = "Same"),
-                StatefulApiTextItem(id = 1L, text = "Same"),
-            ),
+                StatefulApiTextItem(id = 1L, text = "Same")
+            )
         )
         assertFalse(
             callback.areContentsTheSame(
                 StatefulApiTextItem(id = 1L, text = "Old"),
-                StatefulApiTextItem(id = 1L, text = "New"),
-            ),
+                StatefulApiTextItem(id = 1L, text = "New")
+            )
         )
     }
 
@@ -106,12 +106,12 @@ class StatefulViewBindingApiTest {
             areContentsTheSame = { oldItem, newItem ->
                 comparisonCount += 1
                 oldItem.id == newItem.id
-            },
+            }
         ) { _, _ -> }
 
         val result = scope.callback().areContentsTheSame(
             StatefulApiTextItem(id = 1L, text = "Old"),
-            StatefulApiTextItem(id = 1L, text = "New"),
+            StatefulApiTextItem(id = 1L, text = "New")
         )
 
         assertTrue(result)
@@ -130,12 +130,12 @@ class StatefulViewBindingApiTest {
             getChangePayload = { _, _ ->
                 payloadRequestCount += 1
                 expectedPayload
-            },
+            }
         ) { _, _ -> }
 
         val actualPayload = scope.callback().getChangePayload(
             StatefulApiTextItem(id = 1L, text = "Old"),
-            StatefulApiTextItem(id = 1L, text = "New"),
+            StatefulApiTextItem(id = 1L, text = "New")
         )
 
         assertSame(expectedPayload, actualPayload)
@@ -150,7 +150,7 @@ class StatefulViewBindingApiTest {
 
         val error = assertThrows(IllegalStateException::class.java) {
             scope.registry().viewTypeFor(
-                StatefulApiTextItem(id = 1L, text = "Text"),
+                StatefulApiTextItem(id = 1L, text = "Text")
             )
         }
 
@@ -163,17 +163,17 @@ class StatefulViewBindingApiTest {
         scope.registerStatefulTextDelegate()
         scope.viewBinding(
             inflate = statefulApiInflater,
-            keySelector = StatefulApiChoiceItem::id,
+            keySelector = StatefulApiChoiceItem::id
         ) { }
         val registry = scope.registry()
 
         assertEquals(
             0,
-            registry.viewTypeFor(StatefulApiTextItem(id = 1L, text = "Text")),
+            registry.viewTypeFor(StatefulApiTextItem(id = 1L, text = "Text"))
         )
         assertEquals(
             1,
-            registry.viewTypeFor(StatefulApiChoiceItem(id = 2L, title = "Choice")),
+            registry.viewTypeFor(StatefulApiChoiceItem(id = 2L, title = "Choice"))
         )
     }
 
@@ -184,7 +184,7 @@ class StatefulViewBindingApiTest {
         scope.delegate(customDelegate)
 
         val resolved = scope.registry().resolve(
-            StatefulApiTextItem(id = 1L, text = "Text"),
+            StatefulApiTextItem(id = 1L, text = "Text")
         )
 
         assertSame(customDelegate, resolved.delegate)
@@ -195,8 +195,8 @@ class StatefulViewBindingApiTest {
         val delegate: AdapterDelegate<
             StatefulApiItem,
             StatefulApiTextItem,
-            StatefulViewBindingViewHolder<StatefulApiBinding, StatefulApiHolderState>,
-        > = createStatefulViewBindingDelegate(
+            StatefulViewBindingViewHolder<StatefulApiBinding, StatefulApiHolderState>
+            > = createStatefulViewBindingDelegate(
             inflate = statefulApiInflater,
             matcher = { item -> item is StatefulApiTextItem },
             keySelector = StatefulApiTextItem::id,
@@ -208,11 +208,11 @@ class StatefulViewBindingApiTest {
             recycleCallback = {},
             attachedCallback = {},
             detachedCallback = {},
-            failedToRecycleCallback = { false },
+            failedToRecycleCallback = { false }
         )
 
         assertTrue(
-            delegate.isForItem(StatefulApiTextItem(id = 1L, text = "Text")),
+            delegate.isForItem(StatefulApiTextItem(id = 1L, text = "Text"))
         )
     }
 
@@ -225,76 +225,64 @@ class StatefulViewBindingApiTest {
 
 private sealed interface StatefulApiItem
 
-private data class StatefulApiTextItem(
-    val id: Long,
-    val text: String,
-    val isExpanded: Boolean = false,
-) : StatefulApiItem
+private data class StatefulApiTextItem(val id: Long, val text: String, val isExpanded: Boolean = false) :
+    StatefulApiItem
 
-private data class StatefulApiChoiceItem(
-    val id: Long,
-    val title: String,
-) : StatefulApiItem
+private data class StatefulApiChoiceItem(val id: Long, val title: String) : StatefulApiItem
 
 private class StatefulApiHolderState
 
 private class StatefulApiBinding : ViewBinding {
-    override fun getRoot(): View =
-        throw NotImplementedError("Android views are not used by local unit tests.")
+    override fun getRoot(): View = throw NotImplementedError("Android views are not used by local unit tests.")
 }
 
 private val statefulApiInflater:
     (LayoutInflater, ViewGroup, Boolean) -> StatefulApiBinding = { _, _, _ ->
         throw NotImplementedError(
-            "ViewBinding inflation is not used by local unit tests.",
+            "ViewBinding inflation is not used by local unit tests."
         )
     }
 
-private fun statefulApiScope(): BraidAdapterScope<StatefulApiItem> =
-    BraidAdapterScope()
+private fun statefulApiScope(): BraidAdapterScope<StatefulApiItem> = BraidAdapterScope()
 
 private fun BraidAdapterScope<StatefulApiItem>.registerStatefulTextDelegate(
-    matches: (StatefulApiTextItem) -> Boolean = { true },
+    matches: (StatefulApiTextItem) -> Boolean = { true }
 ) {
     statefulViewBinding(
         inflate = statefulApiInflater,
         keySelector = StatefulApiTextItem::id,
         stateFactory = { StatefulApiHolderState() },
-        matches = matches,
+        matches = matches
     ) { _, _ -> }
 }
 
-private fun BraidAdapterScope<StatefulApiItem>.registry():
-    DelegateRegistry<StatefulApiItem> = DelegateRegistry(delegateSnapshot())
+private fun BraidAdapterScope<StatefulApiItem>.registry(): DelegateRegistry<StatefulApiItem> =
+    DelegateRegistry(delegateSnapshot())
 
-private fun BraidAdapterScope<StatefulApiItem>.callback():
-    DelegateItemCallback<StatefulApiItem> = DelegateItemCallback(registry())
+private fun BraidAdapterScope<StatefulApiItem>.callback(): DelegateItemCallback<StatefulApiItem> =
+    DelegateItemCallback(registry())
 
 private class ReusableStatefulTextDelegate :
     StatefulViewBindingDelegate<
         StatefulApiItem,
         StatefulApiTextItem,
         StatefulApiBinding,
-        StatefulApiHolderState,
-    >(
-        inflate = statefulApiInflater,
+        StatefulApiHolderState
+        >(
+        inflate = statefulApiInflater
     ) {
 
-    override fun isForItem(item: StatefulApiItem): Boolean =
-        item is StatefulApiTextItem
+    override fun isForItem(item: StatefulApiItem): Boolean = item is StatefulApiTextItem
 
-    override fun createState(binding: StatefulApiBinding): StatefulApiHolderState =
-        StatefulApiHolderState()
+    override fun createState(binding: StatefulApiBinding): StatefulApiHolderState = StatefulApiHolderState()
 
-    override fun areItemsTheSame(
-        oldItem: StatefulApiTextItem,
-        newItem: StatefulApiTextItem,
-    ): Boolean = oldItem.id == newItem.id
+    override fun areItemsTheSame(oldItem: StatefulApiTextItem, newItem: StatefulApiTextItem): Boolean =
+        oldItem.id == newItem.id
 
     override fun bind(
         binding: StatefulApiBinding,
         state: StatefulApiHolderState,
         item: StatefulApiTextItem,
-        payloads: List<Any>,
+        payloads: List<Any>
     ): Unit = Unit
 }
