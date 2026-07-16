@@ -46,8 +46,9 @@ public class BraidListAdapterScope<BaseItem : Any> internal constructor() {
      *
      * [matches], [keySelector], [areContentsTheSame], and [getChangePayload]
      * must be fast, deterministic, and thread-safe because delegate resolution
-     * and diffing may run off the main thread. Stateful view holders should use
-     * [AdapterDelegate] directly through [delegate].
+     * and diffing may run off the main thread. Stateful items should use
+     * [statefulViewBinding] or a reusable [StatefulViewBindingDelegate] through
+     * [delegate].
      */
     public inline fun <
         reified Item : BaseItem,
@@ -75,6 +76,63 @@ public class BraidListAdapterScope<BaseItem : Any> internal constructor() {
                 payloadProvider = getChangePayload,
                 payloadBinder = bindPayloads,
                 fullBinder = bind,
+            ),
+        )
+    }
+
+    /**
+     * Registers a type-safe ViewBinding delegate with holder-local [State].
+     *
+     * [stateFactory] creates state once for each ViewHolder. The same state is
+     * reused by [bind] and every lifecycle callback for that holder; it is not
+     * part of the adapter item or screen-state model. [keySelector] defines item
+     * identity. [matches], [keySelector], [areContentsTheSame], and
+     * [getChangePayload] must be fast, deterministic, and thread-safe because
+     * delegate resolution and diffing may run off the main thread.
+     *
+     * [bind], [bindPayloads], and lifecycle callbacks operate on Android views
+     * when RecyclerView invokes the corresponding adapter callbacks. Consumers
+     * must release listeners or resources in [recycle] when necessary. This API
+     * does not synchronize editable views with a ViewModel or define an input
+     * conflict policy.
+     */
+    public inline fun <
+        reified Item : BaseItem,
+        VB : ViewBinding,
+        State : Any,
+        Key,
+    > statefulViewBinding(
+        noinline inflate: (LayoutInflater, ViewGroup, Boolean) -> VB,
+        noinline keySelector: (Item) -> Key,
+        noinline stateFactory: VB.() -> State,
+        noinline matches: (Item) -> Boolean = { true },
+        noinline areContentsTheSame: (Item, Item) -> Boolean = { old, new ->
+            old == new
+        },
+        noinline getChangePayload: (Item, Item) -> Any? = { _, _ -> null },
+        noinline bindPayloads: (VB.(Item, State, List<Any>) -> Unit)? = null,
+        noinline recycle: VB.(State) -> Unit = {},
+        noinline attachedToWindow: VB.(State) -> Unit = {},
+        noinline detachedFromWindow: VB.(State) -> Unit = {},
+        noinline failedToRecycle: VB.(State) -> Boolean = { false },
+        noinline bind: VB.(Item, State) -> Unit,
+    ): Unit {
+        delegate(
+            createStatefulViewBindingDelegate(
+                inflate = inflate,
+                matcher = { baseItem: BaseItem ->
+                    baseItem is Item && matches(baseItem)
+                },
+                keySelector = keySelector,
+                contentComparator = areContentsTheSame,
+                payloadProvider = getChangePayload,
+                stateFactory = stateFactory,
+                fullBinder = bind,
+                payloadBinder = bindPayloads,
+                recycleCallback = recycle,
+                attachedCallback = attachedToWindow,
+                detachedCallback = detachedFromWindow,
+                failedToRecycleCallback = failedToRecycle,
             ),
         )
     }
