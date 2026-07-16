@@ -12,6 +12,8 @@ import androidx.viewbinding.ViewBinding
  *
  * Delegate order is preserved in a defensive snapshot. An empty argument list
  * is rejected by the standard [DelegateRegistry] fail-fast validation.
+ *
+ * @throws IllegalArgumentException when no delegates are supplied.
  */
 public fun <BaseItem : Any> braidDelegateRegistry(
     vararg delegates: AdapterDelegate<
@@ -26,6 +28,8 @@ public fun <BaseItem : Any> braidDelegateRegistry(
  *
  * The scope exists only for construction. Delegate order is preserved in a
  * defensive snapshot, and an empty block is rejected by [DelegateRegistry].
+ *
+ * @throws IllegalArgumentException when [block] registers no delegates.
  */
 public fun <BaseItem : Any> braidDelegateRegistry(
     block: BraidAdapterScope<BaseItem>.() -> Unit
@@ -41,6 +45,8 @@ public fun <BaseItem : Any> braidDelegateRegistry(
  *
  * Delegate order is preserved. An empty argument list is rejected by the
  * standard [DelegateRegistry] fail-fast validation.
+ *
+ * @throws IllegalArgumentException when no delegates are supplied.
  */
 public fun <BaseItem : Any> braidListAdapter(
     vararg delegates: AdapterDelegate<
@@ -58,6 +64,8 @@ public fun <BaseItem : Any> braidListAdapter(
  * Use this overload for heterogeneous lists or when combining stateless,
  * stateful, and reusable delegates. The scope exists only for construction;
  * delegate order is preserved in an immutable registry snapshot.
+ *
+ * @throws IllegalArgumentException when [block] registers no delegates.
  */
 public fun <BaseItem : Any> braidListAdapter(
     block: BraidAdapterScope<BaseItem>.() -> Unit
@@ -71,9 +79,12 @@ public fun <BaseItem : Any> braidListAdapter(
  * [keySelector] defines item identity, while content comparison uses structural
  * equality by default. [keySelector], [areContentsTheSame], and
  * [getChangePayload] must be fast, deterministic, and thread-safe because
- * diffing may run off the main thread. Use the block-based [braidListAdapter]
- * overload for lists with multiple item types. The adapter is created
- * immediately; this factory does not use lazy initialization.
+ * diffing may run off the main thread. Non-empty RecyclerView payloads are
+ * forwarded unchanged to [bindPayloads] when it is supplied; otherwise [bind]
+ * performs a full bind. This delegate matches every [Item], so use the
+ * block-based [braidListAdapter] overload for conditional matching or lists
+ * with multiple item types. The adapter is created immediately; this factory
+ * does not use lazy initialization.
  *
  * The factory mirrors the full diff and payload configuration without adding a
  * separate builder object.

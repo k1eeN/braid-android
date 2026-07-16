@@ -47,7 +47,8 @@ public abstract class ViewBindingDelegate<
      * Binds [item] to [binding].
      *
      * An empty [payloads] list represents a full bind. Non-empty payloads are
-     * forwarded unchanged from RecyclerView.
+     * forwarded unchanged from RecyclerView. RecyclerView invokes this method
+     * on the main thread.
      */
     protected abstract fun bind(binding: VB, item: Item, payloads: List<Any>)
 }

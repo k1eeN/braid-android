@@ -56,6 +56,9 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      *
      * The returned value must be passed back to this registry when creating a
      * holder. Missing and overlapping delegates preserve strict diagnostics.
+     *
+     * @throws IllegalStateException when no delegate or more than one delegate
+     * matches [item].
      */
     public fun viewTypeFor(item: BaseItem): Int = resolve(item).viewType
 
@@ -96,7 +99,11 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
     /**
      * Creates a holder for a [viewType] previously returned by [viewTypeFor].
      *
-     * This method is intended for advanced adapter integrations.
+     * This method is intended for advanced adapter integrations. The holder is
+     * tagged with this registry's ownership route for subsequent bind and
+     * lifecycle calls.
+     *
+     * @throws IllegalStateException when [viewType] is not registered.
      */
     public fun createViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val holder = registeredDelegateFor(viewType)
@@ -120,6 +127,10 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      * The holder must originate from [createViewHolder]. An empty [payloads]
      * list represents a full bind. Routing is independent of the holder's
      * externally visible view type, which may be isolated by a parent adapter.
+     *
+     * @throws IllegalStateException when the holder belongs to another registry,
+     * the item has invalid delegate coverage, or the holder and item resolve to
+     * different delegates.
      */
     public fun bindViewHolder(holder: RecyclerView.ViewHolder, item: BaseItem, payloads: List<Any>) {
         val route = holderRoute(holder)
@@ -140,6 +151,8 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      *
      * This method is intended for advanced adapter integrations. The holder
      * must originate from [createViewHolder].
+     *
+     * @throws IllegalStateException when [holder] was not created by this registry.
      */
     public fun onViewRecycled(holder: RecyclerView.ViewHolder): Unit =
         registeredDelegateFor(holderRoute(holder).localViewType)
@@ -151,6 +164,8 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      *
      * This method is intended for advanced adapter integrations. The holder
      * must originate from [createViewHolder].
+     *
+     * @throws IllegalStateException when [holder] was not created by this registry.
      */
     public fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder): Unit =
         registeredDelegateFor(holderRoute(holder).localViewType)
@@ -162,6 +177,8 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      *
      * This method is intended for advanced adapter integrations. The holder
      * must originate from [createViewHolder].
+     *
+     * @throws IllegalStateException when [holder] was not created by this registry.
      */
     public fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder): Unit =
         registeredDelegateFor(holderRoute(holder).localViewType)
@@ -174,6 +191,8 @@ public class DelegateRegistry<BaseItem : Any> internal constructor(
      * This method is intended for advanced adapter integrations. The holder
      * must originate from [createViewHolder]. Adapter integrations should
      * combine this decision with their superclass result.
+     *
+     * @throws IllegalStateException when [holder] was not created by this registry.
      */
     public fun onFailedToRecycleView(holder: RecyclerView.ViewHolder): Boolean =
         registeredDelegateFor(holderRoute(holder).localViewType)

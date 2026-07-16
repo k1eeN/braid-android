@@ -14,10 +14,10 @@ import io.github.k1een.braid.DelegateRegistry
  * [PagingConfig] must use enablePlaceholders = false. Paging submission,
  * refresh, retry, snapshots, load states, and load-state adapter composition
  * remain the standard inherited Paging APIs. Create instances with
- * [braidPagingDataAdapter].
+ * [braidPagingDataAdapter]. Encountering a null presented item fails fast with
+ * an [IllegalStateException] that identifies the placeholder configuration.
  *
  * @param Item non-null item type presented by Paging.
- * @param registry immutable registry used for diffing and view routing.
  */
 public class BraidPagingDataAdapter<Item : Any> internal constructor(private val registry: DelegateRegistry<Item>) :
     PagingDataAdapter<Item, RecyclerView.ViewHolder>(registry.itemCallback) {

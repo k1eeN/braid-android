@@ -11,8 +11,13 @@ import io.github.k1een.braid.braidDelegateRegistry
 /**
  * Creates a [BraidPagingDataAdapter] from existing [delegates].
  *
+ * Delegates are reusable with Braid's regular list adapter and retain strict
+ * single-match routing semantics. An empty argument list is rejected.
+ *
  * Configure the associated Pager with [PagingConfig] and
  * `enablePlaceholders = false`.
+ *
+ * @throws IllegalArgumentException when no delegates are supplied.
  */
 public fun <Item : Any> braidPagingDataAdapter(
     vararg delegates: AdapterDelegate<
@@ -29,9 +34,12 @@ public fun <Item : Any> braidPagingDataAdapter(
  *
  * The [BraidAdapterScope] is used only during construction, and delegate order
  * is preserved in the immutable registry snapshot shared with the adapter.
+ * Every presented item must match exactly one registered delegate.
  *
  * Configure the associated Pager with [PagingConfig] and
  * `enablePlaceholders = false`.
+ *
+ * @throws IllegalArgumentException when [block] registers no delegates.
  */
 public fun <Item : Any> braidPagingDataAdapter(
     block: BraidAdapterScope<Item>.() -> Unit

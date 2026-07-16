@@ -8,8 +8,24 @@ plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.binary.compatibility.validator)
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.dokka)
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.spotless)
+}
+
+dokka {
+    dokkaPublications.html {
+        moduleName.set("Braid")
+        outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
+        failOnWarning.set(true)
+        suppressObviousFunctions.set(true)
+        suppressInheritedMembers.set(false)
+    }
+}
+
+dependencies {
+    dokka(project(":braid"))
+    dokka(project(":braid-paging"))
 }
 
 spotless {
@@ -91,9 +107,10 @@ apiValidation {
 
 tasks.register("qualityCheck") {
     group = "verification"
-    description = "Runs formatting, API, static analysis, and Android lint checks."
+    description = "Runs formatting, API, documentation, static analysis, and Android lint checks."
     dependsOn(
         "spotlessCheck",
+        ":dokkaGenerate",
         ":braid:apiCheck",
         ":braid-paging:apiCheck",
         ":braid:detekt",
