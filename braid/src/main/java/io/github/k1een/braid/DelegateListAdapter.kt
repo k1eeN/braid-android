@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
  */
 public class DelegateListAdapter<Item : Any>(
     private val registry: DelegateRegistry<Item>,
-) : ListAdapter<Item, RecyclerView.ViewHolder>(DelegateItemCallback(registry)) {
+) : ListAdapter<Item, RecyclerView.ViewHolder>(registry.itemCallback) {
 
     /** Returns the registry view type for the item at [position]. */
     override fun getItemViewType(position: Int): Int =

@@ -43,4 +43,7 @@ jobs:
             apiCheck \
             :braid:testDebugUnitTest \
             :braid:assembleDebug \
+            :braid-paging:testDebugUnitTest \
+            :braid-paging:assembleDebug \
+            :braid-paging:assembleDebugAndroidTest \
             :sample:assembleDebug

@@ -222,6 +222,101 @@ class BraidListAdapterApiTest {
         assertTrue(error.message.orEmpty().contains("at least one delegate"))
     }
 
+    @Test
+    fun registryVarargFactoryPreservesDelegateOrder() {
+        val registry = braidDelegateRegistry<ErgonomicItem>(
+            ImageDelegate(),
+            textDelegate(),
+        )
+
+        assertEquals(
+            0,
+            registry.viewTypeFor(ErgonomicImageItem(id = 1L, url = "image.png")),
+        )
+        assertEquals(
+            1,
+            registry.viewTypeFor(ErgonomicTextItem(id = 2L, text = "Text")),
+        )
+    }
+
+    @Test
+    fun registryBlockFactoryPreservesDelegateOrder() {
+        val registry = braidDelegateRegistry<ErgonomicItem> {
+            registerTextDelegate()
+            registerImageDelegate()
+        }
+
+        assertEquals(
+            0,
+            registry.viewTypeFor(ErgonomicTextItem(id = 1L, text = "Text")),
+        )
+        assertEquals(
+            1,
+            registry.viewTypeFor(ErgonomicImageItem(id = 2L, url = "image.png")),
+        )
+    }
+
+    @Test
+    fun registryVarargFactoryKeepsDefensiveSnapshot() {
+        val original = ImageDelegate()
+        val replacement = ImageDelegate()
+        val delegates = arrayOf<
+            AdapterDelegate<
+                ErgonomicItem,
+                out ErgonomicItem,
+                out RecyclerView.ViewHolder,
+            >,
+        >(original)
+        val registry = braidDelegateRegistry(*delegates)
+
+        delegates[0] = replacement
+
+        assertSame(
+            original,
+            registry.resolve(
+                ErgonomicImageItem(id = 1L, url = "image.png"),
+            ).delegate,
+        )
+    }
+
+    @Test
+    fun emptyRegistryBlockUsesRegistryFailFastValidation() {
+        val error = assertThrows(IllegalArgumentException::class.java) {
+            braidDelegateRegistry<ErgonomicItem> { }
+        }
+
+        assertTrue(error.message.orEmpty().contains("at least one delegate"))
+    }
+
+    @Test
+    fun emptyRegistryVarargUsesRegistryFailFastValidation() {
+        val error = assertThrows(IllegalArgumentException::class.java) {
+            braidDelegateRegistry<ErgonomicItem>()
+        }
+
+        assertTrue(error.message.orEmpty().contains("at least one delegate"))
+    }
+
+    @Test
+    fun publicRegistryItemCallbackUsesDelegateDiffRules() {
+        val registry = braidDelegateRegistry<ErgonomicItem> {
+            registerTextDelegate()
+        }
+
+        assertTrue(
+            registry.itemCallback.areItemsTheSame(
+                ErgonomicTextItem(id = 1L, text = "Old"),
+                ErgonomicTextItem(id = 1L, text = "New"),
+            ),
+        )
+        assertFalse(
+            registry.itemCallback.areContentsTheSame(
+                ErgonomicTextItem(id = 1L, text = "Old"),
+                ErgonomicTextItem(id = 1L, text = "New"),
+            ),
+        )
+    }
+
     private fun textCallback(): DelegateItemCallback<ErgonomicItem> {
         val scope = ergonomicScope()
         scope.registerTextDelegate()
@@ -267,6 +362,16 @@ private fun BraidListAdapterScope<ErgonomicItem>.registerImageDelegate() {
         inflate = testInflater,
         keySelector = ErgonomicImageItem::id,
     ) { }
+}
+
+private fun textDelegate(): AdapterDelegate<
+    ErgonomicItem,
+    out ErgonomicItem,
+    out RecyclerView.ViewHolder,
+> {
+    val scope = ergonomicScope()
+    scope.registerTextDelegate()
+    return scope.delegateSnapshot().single()
 }
 
 private fun BraidListAdapterScope<ErgonomicItem>.registry(): DelegateRegistry<ErgonomicItem> =

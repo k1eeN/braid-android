@@ -1,6 +1,7 @@
 package io.github.k1een.braid
 
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
 /**
@@ -31,7 +32,23 @@ public class DelegateRegistry<BaseItem : Any>(
             )
         }
 
-    internal fun viewTypeFor(item: BaseItem): Int = resolve(item).viewType
+    /**
+     * Diff callback backed by this registry's per-delegate identity, content,
+     * and payload rules.
+     *
+     * This property is intended for advanced adapter integrations. Reusing it
+     * keeps diffing and view routing on the same immutable registry snapshot.
+     */
+    public val itemCallback: DiffUtil.ItemCallback<BaseItem> =
+        DelegateItemCallback(this)
+
+    /**
+     * Returns the view type assigned to the single delegate matching [item].
+     *
+     * The returned value must be passed back to this registry when creating a
+     * holder. Missing and overlapping delegates preserve strict diagnostics.
+     */
+    public fun viewTypeFor(item: BaseItem): Int = resolve(item).viewType
 
     internal fun resolve(item: BaseItem): RegisteredDelegate<BaseItem> {
         var firstMatch: RegisteredDelegate<BaseItem>? = null
@@ -67,13 +84,25 @@ public class DelegateRegistry<BaseItem : Any>(
                     "Registered viewTypes: ${registeredDelegates.map { it.viewType }}.",
             )
 
-    internal fun createViewHolder(
+    /**
+     * Creates a holder for a [viewType] previously returned by [viewTypeFor].
+     *
+     * This method is intended for advanced adapter integrations.
+     */
+    public fun createViewHolder(
         parent: ViewGroup,
         viewType: Int,
     ): RecyclerView.ViewHolder =
         registeredDelegateFor(viewType).delegate.createViewHolderErased(parent)
 
-    internal fun bindViewHolder(
+    /**
+     * Binds [item] to [holder] using the matching delegate.
+     *
+     * The holder must originate from this registry and retain the view type
+     * assigned by [RecyclerView.Adapter.createViewHolder]. An empty [payloads]
+     * list represents a full bind.
+     */
+    public fun bindViewHolder(
         holder: RecyclerView.ViewHolder,
         item: BaseItem,
         payloads: List<Any>,
@@ -90,22 +119,30 @@ public class DelegateRegistry<BaseItem : Any>(
         holderDelegate.delegate.bindViewHolderErased(holder, item, payloads)
     }
 
-    internal fun onViewRecycled(
+    /** Routes recycling to the delegate identified by [viewType]. */
+    public fun onViewRecycled(
         holder: RecyclerView.ViewHolder,
         viewType: Int,
     ): Unit = registeredDelegateFor(viewType).delegate.onViewRecycledErased(holder)
 
-    internal fun onViewAttachedToWindow(
+    /** Routes attachment to the delegate identified by [viewType]. */
+    public fun onViewAttachedToWindow(
         holder: RecyclerView.ViewHolder,
         viewType: Int,
     ): Unit = registeredDelegateFor(viewType).delegate.onViewAttachedToWindowErased(holder)
 
-    internal fun onViewDetachedFromWindow(
+    /** Routes detachment to the delegate identified by [viewType]. */
+    public fun onViewDetachedFromWindow(
         holder: RecyclerView.ViewHolder,
         viewType: Int,
     ): Unit = registeredDelegateFor(viewType).delegate.onViewDetachedFromWindowErased(holder)
 
-    internal fun onFailedToRecycleView(
+    /**
+     * Returns the recycling decision from the delegate identified by
+     * [viewType]. Adapter integrations should combine it with their superclass
+     * result.
+     */
+    public fun onFailedToRecycleView(
         holder: RecyclerView.ViewHolder,
         viewType: Int,
     ): Boolean = registeredDelegateFor(viewType).delegate.onFailedToRecycleViewErased(holder)
