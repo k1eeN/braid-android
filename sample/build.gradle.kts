@@ -45,6 +45,7 @@ kotlin {
 
 dependencies {
     implementation(project(":braid"))
+    implementation(project(":braid-paging"))
 
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)

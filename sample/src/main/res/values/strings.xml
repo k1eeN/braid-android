@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">Braid</string>
     <string name="item_selected">Selected: %1$s</string>
+    <string name="open_paging_sample">Open Paging sample</string>
+    <string name="paging_sample_title">Braid + Paging 3</string>
+    <string name="paging_refresh">Refresh</string>
+    <string name="paging_retry">Retry</string>
+    <string name="paging_loading">Loading items</string>
+    <string name="paging_initial_error">Couldn\'t load items. Try again.</string>
+    <string name="paging_append_error">Couldn\'t load more items.</string>
+    <string name="paging_empty">No items to show.</string>
+    <string name="paging_banner_hint">Runs a holder-local animation resource</string>
+    <string name="paging_animate">Animate</string>
+    <string name="navigate_up">Navigate up</string>
 </resources>
