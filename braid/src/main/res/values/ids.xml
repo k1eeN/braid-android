@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item
+        name="braid_internal_delegate_route"
+        type="id" />
+</resources>

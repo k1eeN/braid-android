@@ -40,10 +40,10 @@ public final class io/github/k1een/braid/DelegateRegistry {
 	public final fun bindViewHolder (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;Ljava/lang/Object;Ljava/util/List;)V
 	public final fun createViewHolder (Landroid/view/ViewGroup;I)Landroidx/recyclerview/widget/RecyclerView$ViewHolder;
 	public final fun getItemCallback ()Landroidx/recyclerview/widget/DiffUtil$ItemCallback;
-	public final fun onFailedToRecycleView (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;I)Z
-	public final fun onViewAttachedToWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;I)V
-	public final fun onViewDetachedFromWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;I)V
-	public final fun onViewRecycled (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;I)V
+	public final fun onFailedToRecycleView (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)Z
+	public final fun onViewAttachedToWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+	public final fun onViewDetachedFromWindow (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
+	public final fun onViewRecycled (Landroidx/recyclerview/widget/RecyclerView$ViewHolder;)V
 	public final fun viewTypeFor (Ljava/lang/Object;)I
 }
 
