@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "Braid"
 include(":sample")
 include(":braid")
+include(":braid-paging")

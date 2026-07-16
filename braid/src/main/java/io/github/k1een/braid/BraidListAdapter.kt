@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 
 /**
- * Transient scope used to compose delegates for a [DelegateListAdapter].
+ * Transient scope used to compose delegates for Braid adapters.
  *
  * The scope is mutable only while the adapter is being built. Braid takes a
  * defensive snapshot before creating the immutable [DelegateRegistry].
@@ -143,6 +143,35 @@ public class BraidListAdapterScope<BaseItem : Any> internal constructor() {
 }
 
 /**
+ * Creates an immutable [DelegateRegistry] from existing [delegates].
+ *
+ * Delegate order is preserved in a defensive snapshot. An empty argument list
+ * is rejected by the standard [DelegateRegistry] fail-fast validation.
+ */
+public fun <BaseItem : Any> braidDelegateRegistry(
+    vararg delegates: AdapterDelegate<
+        BaseItem,
+        out BaseItem,
+        out RecyclerView.ViewHolder,
+    >,
+): DelegateRegistry<BaseItem> = DelegateRegistry(delegates.toList())
+
+/**
+ * Creates an immutable [DelegateRegistry] from delegates declared in [block].
+ *
+ * The scope exists only for construction. Delegate order is preserved in a
+ * defensive snapshot, and an empty block is rejected by [DelegateRegistry].
+ */
+public fun <BaseItem : Any> braidDelegateRegistry(
+    block: BraidListAdapterScope<BaseItem>.() -> Unit,
+): DelegateRegistry<BaseItem> {
+    val scope = BraidListAdapterScope<BaseItem>()
+    scope.block()
+
+    return DelegateRegistry(scope.delegateSnapshot())
+}
+
+/**
  * Creates a [DelegateListAdapter] from existing [delegates].
  *
  * Delegate order is preserved. An empty argument list is rejected by the
@@ -155,7 +184,7 @@ public fun <BaseItem : Any> braidListAdapter(
         out RecyclerView.ViewHolder,
     >,
 ): DelegateListAdapter<BaseItem> = DelegateListAdapter(
-    registry = DelegateRegistry(delegates.toList()),
+    registry = braidDelegateRegistry(*delegates),
 )
 
 /**
@@ -166,11 +195,6 @@ public fun <BaseItem : Any> braidListAdapter(
  */
 public fun <BaseItem : Any> braidListAdapter(
     block: BraidListAdapterScope<BaseItem>.() -> Unit,
-): DelegateListAdapter<BaseItem> {
-    val scope = BraidListAdapterScope<BaseItem>()
-    scope.block()
-
-    return DelegateListAdapter(
-        registry = DelegateRegistry(scope.delegateSnapshot()),
-    )
-}
+): DelegateListAdapter<BaseItem> = DelegateListAdapter(
+    registry = braidDelegateRegistry(block),
+)
