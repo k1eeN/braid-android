@@ -33,19 +33,30 @@ public abstract class AdapterDelegate<
      */
     public abstract fun isForItem(item: BaseItem): Boolean
 
-    /** Creates this delegate's view holder for [parent]. */
+    /**
+     * Creates this delegate's view holder for [parent].
+     *
+     * RecyclerView invokes this method on the main thread. The returned holder
+     * is routed back only to this delegate for binding and lifecycle callbacks.
+     */
     public abstract fun createViewHolder(parent: ViewGroup): VH
 
     /**
      * Binds [item] to [holder].
      *
      * An empty [payloads] list represents a full bind. A non-empty list is
-     * passed through unchanged from RecyclerView for a partial bind.
+     * passed through unchanged from RecyclerView for a partial bind. RecyclerView
+     * invokes this method on the main thread with a holder created by this
+     * delegate.
      */
     public abstract fun bindViewHolder(holder: VH, item: Item, payloads: List<Any>)
 
     /**
      * Returns whether [oldItem] and [newItem] represent the same list item.
+     *
+     * [DelegateRegistry] invokes this method only after both values resolve to
+     * the same delegate registration. Items handled by different registrations
+     * are never considered identical, even when their model keys are equal.
      *
      * This method must be fast, deterministic, and thread-safe.
      */
@@ -67,19 +78,26 @@ public abstract class AdapterDelegate<
      */
     public open fun getChangePayload(oldItem: Item, newItem: Item): Any? = null
 
-    /** Called when [holder] is recycled. */
+    /**
+     * Called on the main thread when [holder] is recycled.
+     *
+     * The default implementation does nothing. Override it to release listeners
+     * or holder-owned resources before the holder is reused.
+     */
     public open fun onViewRecycled(holder: VH): Unit = Unit
 
-    /** Called when [holder] is attached to a window. */
+    /** Called on the main thread when [holder] is attached to a window. */
     public open fun onViewAttachedToWindow(holder: VH): Unit = Unit
 
-    /** Called when [holder] is detached from a window. */
+    /** Called on the main thread when [holder] is detached from a window. */
     public open fun onViewDetachedFromWindow(holder: VH): Unit = Unit
 
     /**
      * Called when RecyclerView could not recycle [holder].
      *
-     * Return `true` when the holder may still be recycled.
+     * RecyclerView invokes this method on the main thread. Return `true` when
+     * the holder may still be recycled; the default implementation returns
+     * `false`.
      */
     public open fun onFailedToRecycleView(holder: VH): Boolean = false
 

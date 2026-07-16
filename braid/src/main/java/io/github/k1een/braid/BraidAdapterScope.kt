@@ -23,7 +23,9 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
      * Registers an existing [delegate] in declaration order.
      *
      * Use this method for reusable delegates and delegates with stateful view
-     * holders or specialized lifecycle handling.
+     * holders or specialized lifecycle handling. Registration order assigns a
+     * local view type; it does not weaken the requirement that every item match
+     * exactly one delegate.
      */
     public fun delegate(
         delegate: AdapterDelegate<
@@ -42,7 +44,8 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
      * equality by default. [matches] can distinguish multiple representations
      * of the same [Item] type. When RecyclerView supplies payloads,
      * [bindPayloads] handles them when provided; otherwise [bind] performs a
-     * full bind.
+     * full bind. [inflate] is invoked with `attachToParent = false` when the
+     * holder is created.
      *
      * [matches], [keySelector], [areContentsTheSame], and [getChangePayload]
      * must be fast, deterministic, and thread-safe because delegate resolution
@@ -97,7 +100,9 @@ public class BraidAdapterScope<BaseItem : Any> internal constructor() {
      * when RecyclerView invokes the corresponding adapter callbacks. Consumers
      * must release listeners or resources in [recycle] when necessary. This API
      * does not synchronize editable views with a ViewModel or define an input
-     * conflict policy.
+     * conflict policy. Lifecycle callbacks default to no-ops, except
+     * [failedToRecycle], which returns `false` by default. [inflate] is invoked
+     * with `attachToParent = false`.
      *
      * Stateful holder lifecycle callbacks are explicit parts of this DSL.
      */

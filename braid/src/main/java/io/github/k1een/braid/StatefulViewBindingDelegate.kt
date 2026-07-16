@@ -74,29 +74,38 @@ public abstract class StatefulViewBindingDelegate<
     final override fun onFailedToRecycleView(holder: StatefulViewBindingViewHolder<VB, State>): Boolean =
         failedToRecycle(holder.binding, holder.state)
 
-    /** Creates the holder-local [State] for [binding]. */
+    /**
+     * Creates the holder-local [State] for [binding] once on the main thread.
+     *
+     * The returned value belongs to that holder until it is discarded.
+     */
     protected abstract fun createState(binding: VB): State
 
     /**
      * Binds [item] using the holder's [binding] and [state].
      *
      * [payloads] are forwarded unchanged from RecyclerView. An empty list
-     * represents a full bind.
+     * represents a full bind. RecyclerView invokes this method on the main
+     * thread.
      */
     protected abstract fun bind(binding: VB, state: State, item: Item, payloads: List<Any>)
 
-    /** Releases listeners or resources associated with [binding] and [state]. */
+    /**
+     * Releases listeners or resources associated with [binding] and [state]
+     * on the main thread. The default implementation does nothing.
+     */
     protected open fun recycle(binding: VB, state: State): Unit = Unit
 
-    /** Handles attachment of the holder that owns [binding] and [state]. */
+    /** Handles main-thread attachment of the holder that owns [binding] and [state]. */
     protected open fun attachedToWindow(binding: VB, state: State): Unit = Unit
 
-    /** Handles detachment of the holder that owns [binding] and [state]. */
+    /** Handles main-thread detachment of the holder that owns [binding] and [state]. */
     protected open fun detachedFromWindow(binding: VB, state: State): Unit = Unit
 
     /**
      * Handles a failed recycling attempt for the holder that owns [binding]
-     * and [state]. Return `true` when the holder may still be recycled.
+     * and [state] on the main thread. Return `true` when the holder may still be
+     * recycled; the default implementation returns `false`.
      */
     protected open fun failedToRecycle(binding: VB, state: State): Boolean = false
 }

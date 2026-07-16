@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
  * Create instances with [braidListAdapter].
  *
  * @param Item item type stored by this adapter.
- * @param registry immutable registry used internally for adapter routing.
  */
 public class BraidListAdapter<Item : Any> internal constructor(private val registry: DelegateRegistry<Item>) :
     ListAdapter<Item, RecyclerView.ViewHolder>(registry.itemCallback) {

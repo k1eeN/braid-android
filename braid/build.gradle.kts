@@ -1,9 +1,53 @@
+import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.dokka)
     alias(libs.plugins.kotlin.android)
+}
+
+dokka {
+    dokkaPublications.html {
+        moduleName.set("braid")
+        failOnWarning.set(true)
+        suppressObviousFunctions.set(true)
+        suppressInheritedMembers.set(false)
+    }
+
+    dokkaSourceSets.named("main") {
+        documentedVisibilities.set(
+            setOf(
+                VisibilityModifier.Public,
+                VisibilityModifier.Protected
+            )
+        )
+        reportUndocumented.set(true)
+        skipEmptyPackages.set(true)
+        skipDeprecated.set(false)
+        suppressGeneratedFiles.set(true)
+        jdkVersion.set(11)
+        includes.from(rootProject.file("docs/dokka/braid.md"))
+
+        sourceLink {
+            localDirectory.set(file("src/main/java"))
+            remoteUrl("https://github.com/k1eeN/braid-android/tree/main/braid/src/main/java")
+            remoteLineSuffix.set("#L")
+        }
+
+        externalDocumentationLinks.register("androidx-viewbinding") {
+            url(
+                "https://cs.android.com/androidx/platform/frameworks/data-binding/+/" +
+                    "studio-master-dev:extensions/viewbinding/src/main/java/"
+            )
+            packageListUrl(
+                rootProject.file("docs/dokka/androidx-viewbinding-package-list")
+                    .toURI()
+                    .toString()
+            )
+        }
+    }
 }
 
 android {
