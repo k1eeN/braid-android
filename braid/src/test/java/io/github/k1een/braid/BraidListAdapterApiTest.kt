@@ -15,7 +15,7 @@ import org.junit.Test
 class BraidListAdapterApiTest {
 
     @Test
-    fun `scope preserves delegate registration order`() {
+    fun `custom scope extensions preserve delegate registration order`() {
         val scope = ergonomicScope()
         scope.registerTextDelegate()
         scope.registerImageDelegate()
@@ -347,17 +347,17 @@ private val testInflater: (LayoutInflater, ViewGroup, Boolean) -> TestBinding =
         throw NotImplementedError("ViewBinding inflation is not used by local unit tests.")
     }
 
-private fun ergonomicScope(): BraidListAdapterScope<ErgonomicItem> =
-    BraidListAdapterScope()
+private fun ergonomicScope(): BraidAdapterScope<ErgonomicItem> =
+    BraidAdapterScope()
 
-private fun BraidListAdapterScope<ErgonomicItem>.registerTextDelegate() {
+private fun BraidAdapterScope<ErgonomicItem>.registerTextDelegate() {
     viewBinding(
         inflate = testInflater,
         keySelector = ErgonomicTextItem::id,
     ) { }
 }
 
-private fun BraidListAdapterScope<ErgonomicItem>.registerImageDelegate() {
+private fun BraidAdapterScope<ErgonomicItem>.registerImageDelegate() {
     viewBinding(
         inflate = testInflater,
         keySelector = ErgonomicImageItem::id,
@@ -374,11 +374,37 @@ private fun textDelegate(): AdapterDelegate<
     return scope.delegateSnapshot().single()
 }
 
-private fun BraidListAdapterScope<ErgonomicItem>.registry(): DelegateRegistry<ErgonomicItem> =
+private fun BraidAdapterScope<ErgonomicItem>.registry(): DelegateRegistry<ErgonomicItem> =
     DelegateRegistry(delegateSnapshot())
 
-private fun BraidListAdapterScope<ErgonomicItem>.callback(): DelegateItemCallback<ErgonomicItem> =
+private fun BraidAdapterScope<ErgonomicItem>.callback(): DelegateItemCallback<ErgonomicItem> =
     DelegateItemCallback(registry())
+
+@Suppress("unused")
+private fun inferredSingleItemFactoryUsage(): BraidListAdapter<ErgonomicTextItem> =
+    braidListAdapter(
+        inflate = testInflater,
+        keySelector = ErgonomicTextItem::id,
+    ) { }
+
+@Suppress("unused")
+private fun explicitSingleItemFactoryUsage(): BraidListAdapter<ErgonomicTextItem> =
+    braidListAdapter<ErgonomicTextItem, TestBinding, Long>(
+        inflate = testInflater,
+        keySelector = ErgonomicTextItem::id,
+    ) { }
+
+@Suppress("unused")
+private fun configuredSingleItemFactoryUsage(): BraidListAdapter<ErgonomicTextItem> =
+    braidListAdapter(
+        inflate = testInflater,
+        keySelector = ErgonomicTextItem::id,
+        areContentsTheSame = { oldItem, newItem ->
+            oldItem.text == newItem.text
+        },
+        getChangePayload = { _, _ -> Any() },
+        bindPayloads = { _, _ -> },
+    ) { }
 
 private class ImageDelegate :
     AdapterDelegate<ErgonomicItem, ErgonomicImageItem, RecyclerView.ViewHolder>() {
