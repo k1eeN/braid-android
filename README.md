@@ -2,15 +2,20 @@
 
 [![CI](https://github.com/k1eeN/braid-android/actions/workflows/ci.yml/badge.svg)](https://github.com/k1eeN/braid-android/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-![API](https://img.shields.io/badge/API-pre--release-orange)
+![API](https://img.shields.io/badge/API-alpha-orange)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.k1een/braid?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.k1een/braid)
 
 Braid is a type-safe delegate layer for AndroidX `ListAdapter` and `PagingDataAdapter`. It keeps AndroidX responsible for list storage, diff execution, and paging while standardizing item rendering, per-type diff rules, payloads, ViewBinding, holder-local state, and strict delegate routing.
 
 ## Status
 
-Braid is in active pre-release development. Its public API may still change before the first published alpha, and semantic compatibility is not guaranteed yet.
+Braid's first public alpha has been published. The current version is
+[`v0.1.0-alpha01`](https://github.com/k1eeN/braid-android/releases/tag/v0.1.0-alpha01),
+and both `braid` and `braid-paging` are available from Maven Central.
 
-Integration behavior is being validated against adapters migrated from a real Android codebase. The artifacts have not been published to Maven Central, and there are no public Maven coordinates yet.
+The API remains alpha and may have breaking changes before a stable release.
+The library is already being validated through migrations from a real Android
+application.
 
 ## Why Braid
 
@@ -35,11 +40,11 @@ Nested-list helpers and consumer-facing delegate testing utilities are not imple
 
 ## Modules
 
-| Module | Purpose |
-| --- | --- |
-| [`braid`](braid) | Core `ListAdapter`, delegate, registry, ViewBinding, payload, and holder-state APIs. |
-| [`braid-paging`](braid-paging) | Optional Paging 3 integration. Depends on `braid`. |
-| [`sample`](sample) | Executable app demonstrating homogeneous lists, heterogeneous Paging, holder state, load states, retry, and refresh. |
+| Module | Coordinate | Purpose |
+| --- | --- | --- |
+| [`braid`](braid) | `io.github.k1een:braid` | Core `ListAdapter`, delegate, registry, ViewBinding, payload, and holder-state APIs. |
+| [`braid-paging`](braid-paging) | `io.github.k1een:braid-paging` | Optional Paging 3 integration. Depends on `braid`. |
+| [`sample`](sample) | Not published | Executable app demonstrating homogeneous lists, heterogeneous Paging, holder state, load states, retry, and refresh. |
 
 ## Requirements
 
@@ -62,24 +67,40 @@ These are the versions used to build and test Braid itself, not a claim that eve
 
 ## Installation
 
-Braid has not been published to Maven Central yet. For local evaluation, clone this repository and either use the included `sample` application, include the library modules as Gradle project dependencies, or build local AARs.
+Make sure Maven Central is available to the project:
 
 ```kotlin
-dependencies {
-    implementation(project(":braid"))
-
-    // Add only when Paging integration is needed.
-    implementation(project(":braid-paging"))
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
 }
 ```
 
-Build release AARs with:
+Use `braid` for the `ListAdapter` API:
 
-```shell
-./gradlew :braid:assembleRelease :braid-paging:assembleRelease
+```kotlin
+dependencies {
+    implementation("io.github.k1een:braid:0.1.0-alpha01")
+}
 ```
 
-The outputs are written under each module's `build/outputs/aar/` directory. Maven coordinates will be documented after the first release is published; Braid does not use JitPack as an interim distribution channel.
+[View the core artifact on Maven Central](https://central.sonatype.com/artifact/io.github.k1een/braid/0.1.0-alpha01).
+
+Use `braid-paging` for Paging 3:
+
+```kotlin
+dependencies {
+    implementation("io.github.k1een:braid-paging:0.1.0-alpha01")
+}
+```
+
+[View the Paging artifact on Maven Central](https://central.sonatype.com/artifact/io.github.k1een/braid-paging/0.1.0-alpha01).
+
+`braid-paging` publishes core `braid` as a transitive dependency. Paging
+consumers do not need to declare both artifacts unless there is a reason to pin
+both coordinates explicitly.
 
 ## Homogeneous lists
 
@@ -388,6 +409,31 @@ Open `build/dokka/html/index.html`. Documentation generation is part of `quality
 
 ## Development
 
+### Local development
+
+The following options are for developing Braid from this repository, not for
+normal consumer installation. Consumers should use Maven Central and should not
+copy local AARs manually.
+
+Modules in a Braid checkout can be used as project dependencies:
+
+```kotlin
+dependencies {
+    implementation(project(":braid"))
+    implementation(project(":braid-paging"))
+}
+```
+
+Build release AARs for local inspection with:
+
+```shell
+./gradlew :braid:assembleRelease :braid-paging:assembleRelease
+```
+
+The local AARs are written under each module's `build/outputs/aar/` directory.
+
+### Verification
+
 Run the complete non-device quality gate:
 
 ```shell
@@ -422,13 +468,13 @@ On Windows, use `gradlew.bat` instead of `./gradlew`. CI also assembles both lib
 
 ## Roadmap
 
-- Publish the artifacts to Maven Central.
-- Cut the first alpha release.
-- Validate nested-list behavior and state restoration in production scenarios.
-- Expand documentation and focused examples.
-- Add broader consumer compatibility testing.
+- Validate nested-list behavior.
+- Validate state restoration and production integrations.
+- Expand focused examples and documentation.
+- Broaden consumer compatibility testing.
+- Stabilize the API toward later alpha and beta releases.
 
-No release dates are promised while the API remains pre-release.
+No release dates are promised while the API remains alpha.
 
 ## License
 

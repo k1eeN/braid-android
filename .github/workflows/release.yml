@@ -4,10 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Maven version, for example 0.1.0-alpha01."
+        description: "Maven version in major.minor.patch[-prerelease] format."
         required: true
         type: string
-        default: 0.1.0-alpha01
       upload:
         description: "Upload a signed user-managed deployment to Central Portal."
         required: true
