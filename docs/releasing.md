@@ -1,8 +1,9 @@
 # Releasing Braid
 
 This is the maintainer runbook for publishing Braid through the Maven Central
-Publisher Portal. The repository does not currently contain a release workflow,
-and none of the credentials described below are assumed to be configured.
+Publisher Portal. A manual GitHub Actions workflow verifies releases without
+credentials and, after explicit confirmation, uploads a signed user-managed
+deployment. Final publication remains a manual action in the Central Portal.
 
 ## Published artifacts
 
@@ -35,9 +36,10 @@ Before attempting a release, confirm all of the following:
 The private GPG key must be exported in an in-memory format accepted by Gradle
 Signing. Do not import it into the repository or store it as a tracked file.
 
-## Future GitHub secrets
+## GitHub release environment
 
-A future release workflow will need the following repository secrets:
+The GitHub Environment named `release` allows deployments only from `main` and
+contains these Environment secrets:
 
 | GitHub secret | Gradle environment variable |
 | --- | --- |
@@ -47,10 +49,10 @@ A future release workflow will need the following repository secrets:
 | `SIGNING_IN_MEMORY_KEY_ID` | `ORG_GRADLE_PROJECT_signingInMemoryKeyId` |
 | `SIGNING_IN_MEMORY_KEY_PASSWORD` | `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword` |
 
-These secrets are reserved names only. This repository does not assert that
-they have been created.
+Only the workflow's `upload` job uses the `release` Environment. The `verify`
+job, including every dry run, has no access to these secrets.
 
-The release environment also enables these non-secret Gradle properties:
+The remote upload step also enables these non-secret Gradle properties:
 
 ```text
 ORG_GRADLE_PROJECT_mavenCentralPublishing=true
@@ -114,11 +116,41 @@ Before upload, verify that the selected version:
 Do not derive release versions from timestamps, commit hashes, `versionCode`, or
 the latest Git tag.
 
-## Uploading to Central
+## GitHub Actions release workflow
 
-Set the Portal token, signing key, and non-secret activation properties only in
-the release environment. Then upload both module publications with the same
-explicit version:
+The workflow file must be present in the default branch before GitHub exposes
+the manual action. Prepare and upload a release as follows:
+
+1. Confirm the workflow commit is in `main` and CI is green.
+2. Open **Actions -> Release to Maven Central -> Run workflow**.
+3. Start with `version = 0.1.0-alpha01`, `upload = false`, and an empty
+   `confirmation` value.
+4. Confirm the `verify` job is green and the `upload` job is skipped.
+5. Run the workflow again with the exact same version, `upload = true`, and
+   `confirmation = PUBLISH 0.1.0-alpha01`.
+6. Approve the `upload` job if required by the `release` Environment rules.
+7. Wait for the signed user-managed deployment upload to complete.
+8. Open **Central Portal -> Deployments**.
+9. Wait for Central validation to finish.
+10. Inspect both modules, signatures, POM metadata, and dependency metadata.
+11. Click **Publish** manually only after every validation and inspection passes.
+12. Wait until both coordinates resolve from Maven Central.
+13. Only then create the Git tag and GitHub Release as a separate task.
+
+The workflow rejects runs outside `main`, invalid or snapshot versions, an
+incorrect upload confirmation, an existing `v<version>` Git tag, and a version
+already published under either coordinate. The `release` Environment is
+restricted to `main`; its secrets are unavailable to dry runs. Automatic
+publication is disabled, and Maven Central coordinates are immutable after
+publication.
+
+## Manual upload fallback
+
+If GitHub Actions is unavailable, a maintainer may use the local path from a
+clean, current `main` checkout after completing the same verification and
+confirmation steps. Set the Portal token, in-memory signing key, and non-secret
+activation properties only in the current release shell, then upload both
+module publications with the same explicit version:
 
 ```shell
 ./gradlew -PVERSION_NAME=0.1.0-alpha01 \
@@ -130,9 +162,10 @@ With `mavenCentralAutomaticPublishing=false`, these tasks upload a deployment
 but do not release it automatically. Do not run any Central task during normal
 development or pull-request validation.
 
-Automatic publication is intentionally not the default. A future deliberately
-approved workflow may use the plugin's `publishAndReleaseToMavenCentral` tasks,
-but only after the manual path and recovery procedure have been exercised.
+Always use both `publishToMavenCentral` tasks in one Gradle invocation so the
+plugin can create one user-managed deployment. Do not use
+`publishAndReleaseToMavenCentral`; automatic publication is intentionally
+disabled.
 
 ## Portal validation and manual publication
 
@@ -176,5 +209,5 @@ Never commit or print any of the following:
 - generated local Maven repositories or temporary consumers;
 - release-environment files containing secrets.
 
-Keep release credentials in the Portal, a password manager, and the future
-GitHub secret store only.
+Keep release credentials in the Portal, a password manager, and the GitHub
+Environment named `release` only.

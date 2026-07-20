@@ -402,9 +402,9 @@ Validate the Maven publications locally without credentials or a remote upload:
 
 The task publishes only to `build/test-maven-repository`, validates the AAR,
 sources, Dokka javadoc, POM, and Gradle Module Metadata for both library
-modules, and never writes to `~/.m2`. Maintainers should follow the
-[release runbook](docs/releasing.md) before enabling Central publishing or
-signing.
+modules, and never writes to `~/.m2`. Maven Central deployments are prepared
+through the manual release workflow described in
+[docs/releasing.md](docs/releasing.md).
 
 Run unit tests and build the modules:
 

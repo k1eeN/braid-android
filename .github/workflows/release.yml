@@ -1,0 +1,397 @@
+name: Release to Maven Central
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Maven version, for example 0.1.0-alpha01."
+        required: true
+        type: string
+        default: 0.1.0-alpha01
+      upload:
+        description: "Upload a signed user-managed deployment to Central Portal."
+        required: true
+        type: boolean
+        default: false
+      confirmation:
+        description: "When upload is enabled, type PUBLISH followed by the exact version."
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maven-central-release
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify release
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Validate release request
+        shell: bash
+        env:
+          VERSION_NAME: ${{ inputs.version }}
+          SHOULD_UPLOAD: ${{ inputs.upload }}
+          RELEASE_CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Release verification must run from refs/heads/main."
+            exit 1
+          fi
+
+          if [[ -z "$VERSION_NAME" ]]; then
+            echo "::error::Version must not be empty."
+            exit 1
+          fi
+
+          version_pattern='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$'
+          if [[ ! "$VERSION_NAME" =~ $version_pattern ]]; then
+            echo "::error::Version does not match the allowed release format."
+            exit 1
+          fi
+
+          if [[ "${VERSION_NAME^^}" == *SNAPSHOT* ]]; then
+            echo "::error::SNAPSHOT versions cannot be released."
+            exit 1
+          fi
+
+          case "$SHOULD_UPLOAD" in
+            true|false) ;;
+            *)
+              echo "::error::Upload input must be a boolean."
+              exit 1
+              ;;
+          esac
+
+          if [[ "$SHOULD_UPLOAD" == "true" ]] &&
+             [[ "$RELEASE_CONFIRMATION" != "PUBLISH $VERSION_NAME" ]]; then
+            echo "::error::Upload confirmation does not match the requested version."
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Check release availability
+        shell: bash
+        env:
+          VERSION_NAME: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$(git rev-parse HEAD)" != "$GITHUB_SHA" ]]; then
+            echo "::error::Checked out commit does not match the verified workflow SHA."
+            exit 1
+          fi
+
+          check_central_coordinate() {
+            local artifact_id="$1"
+            local pom_url
+            local http_status
+
+            pom_url="https://repo.maven.apache.org/maven2/io/github/k1een/${artifact_id}/${VERSION_NAME}/${artifact_id}-${VERSION_NAME}.pom"
+            if ! http_status="$(
+              curl --silent --show-error --location \
+                --connect-timeout 15 \
+                --max-time 30 \
+                --output /dev/null \
+                --write-out '%{http_code}' \
+                "$pom_url"
+            )"; then
+              echo "::error::Unable to check Maven Central for ${artifact_id}."
+              exit 1
+            fi
+
+            case "$http_status" in
+              200)
+                echo "::error::io.github.k1een:${artifact_id}:${VERSION_NAME} is already published."
+                exit 1
+                ;;
+              404)
+                echo "io.github.k1een:${artifact_id}:${VERSION_NAME} is not published yet."
+                ;;
+              *)
+                echo "::error::Maven Central returned HTTP ${http_status} for ${artifact_id}."
+                exit 1
+                ;;
+            esac
+          }
+
+          check_central_coordinate "braid"
+          check_central_coordinate "braid-paging"
+
+          if git ls-remote --exit-code --tags origin \
+            "refs/tags/v${VERSION_NAME}" >/dev/null; then
+            echo "::error::Git tag v${VERSION_NAME} already exists."
+            exit 1
+          else
+            tag_status=$?
+            if [[ "$tag_status" -ne 2 ]]; then
+              echo "::error::Unable to verify the release tag state."
+              exit 1
+            fi
+          fi
+
+      - name: Run release dry run
+        shell: bash
+        env:
+          VERSION_NAME: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          ./gradlew --no-daemon --stacktrace \
+            -PVERSION_NAME="$VERSION_NAME" \
+            qualityCheck \
+            :braid:testDebugUnitTest \
+            :braid:assembleRelease \
+            :braid:assembleDebugAndroidTest \
+            :braid-paging:testDebugUnitTest \
+            :braid-paging:assembleRelease \
+            :braid-paging:assembleDebugAndroidTest \
+            :sample:testDebugUnitTest \
+            :sample:assembleDebug
+
+      - name: Write verification summary
+        shell: bash
+        env:
+          VERSION_NAME: ${{ inputs.version }}
+          SHOULD_UPLOAD: ${{ inputs.upload }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$SHOULD_UPLOAD" == "true" ]]; then
+            upload_requested="yes"
+            upload_note="Verification succeeded; the upload job may proceed after Environment approval."
+          else
+            upload_requested="no"
+            upload_note="No remote upload was performed."
+          fi
+
+          {
+            echo "## Maven Central release verification"
+            echo
+            printf -- "- Version: %s\n" "$VERSION_NAME"
+            printf -- "- Commit SHA: %s\n" "$GITHUB_SHA"
+            printf -- "- Ref: %s\n" "$GITHUB_REF"
+            echo "- Dry-run result: passed"
+            printf -- "- Upload requested: %s\n" "$upload_requested"
+            echo "- Coordinates:"
+            printf -- "  - io.github.k1een:braid:%s\n" "$VERSION_NAME"
+            printf -- "  - io.github.k1een:braid-paging:%s\n" "$VERSION_NAME"
+            echo
+            printf -- "%s\n" "$upload_note"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  upload:
+    name: Upload user-managed deployment
+    needs: verify
+    if: ${{ inputs.upload == true }}
+    environment: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Revalidate release request
+        shell: bash
+        env:
+          VERSION_NAME: ${{ inputs.version }}
+          SHOULD_UPLOAD: ${{ inputs.upload }}
+          RELEASE_CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Release upload must run from refs/heads/main."
+            exit 1
+          fi
+
+          version_pattern='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$'
+          if [[ -z "$VERSION_NAME" ]] ||
+             [[ ! "$VERSION_NAME" =~ $version_pattern ]] ||
+             [[ "${VERSION_NAME^^}" == *SNAPSHOT* ]]; then
+            echo "::error::Version does not match the allowed release format."
+            exit 1
+          fi
+
+          if [[ "$SHOULD_UPLOAD" != "true" ]]; then
+            echo "::error::Upload job requires upload=true."
+            exit 1
+          fi
+
+          if [[ "$RELEASE_CONFIRMATION" != "PUBLISH $VERSION_NAME" ]]; then
+            echo "::error::Upload confirmation does not match the requested version."
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Recheck release availability
+        shell: bash
+        env:
+          VERSION_NAME: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$(git rev-parse HEAD)" != "$GITHUB_SHA" ]]; then
+            echo "::error::Checked out commit does not match the verified workflow SHA."
+            exit 1
+          fi
+
+          check_central_coordinate() {
+            local artifact_id="$1"
+            local pom_url
+            local http_status
+
+            pom_url="https://repo.maven.apache.org/maven2/io/github/k1een/${artifact_id}/${VERSION_NAME}/${artifact_id}-${VERSION_NAME}.pom"
+            if ! http_status="$(
+              curl --silent --show-error --location \
+                --connect-timeout 15 \
+                --max-time 30 \
+                --output /dev/null \
+                --write-out '%{http_code}' \
+                "$pom_url"
+            )"; then
+              echo "::error::Unable to check Maven Central for ${artifact_id}."
+              exit 1
+            fi
+
+            case "$http_status" in
+              200)
+                echo "::error::io.github.k1een:${artifact_id}:${VERSION_NAME} is already published."
+                exit 1
+                ;;
+              404)
+                echo "io.github.k1een:${artifact_id}:${VERSION_NAME} is not published yet."
+                ;;
+              *)
+                echo "::error::Maven Central returned HTTP ${http_status} for ${artifact_id}."
+                exit 1
+                ;;
+            esac
+          }
+
+          check_central_coordinate "braid"
+          check_central_coordinate "braid-paging"
+
+          if git ls-remote --exit-code --tags origin \
+            "refs/tags/v${VERSION_NAME}" >/dev/null; then
+            echo "::error::Git tag v${VERSION_NAME} already exists."
+            exit 1
+          else
+            tag_status=$?
+            if [[ "$tag_status" -ne 2 ]]; then
+              echo "::error::Unable to verify the release tag state."
+              exit 1
+            fi
+          fi
+
+      - name: Check release secrets
+        shell: bash
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          SIGNING_IN_MEMORY_KEY: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+          SIGNING_IN_MEMORY_KEY_ID: ${{ secrets.SIGNING_IN_MEMORY_KEY_ID }}
+          SIGNING_IN_MEMORY_KEY_PASSWORD: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          missing_secret=false
+          for secret_name in \
+            MAVEN_CENTRAL_USERNAME \
+            MAVEN_CENTRAL_PASSWORD \
+            SIGNING_IN_MEMORY_KEY \
+            SIGNING_IN_MEMORY_KEY_ID \
+            SIGNING_IN_MEMORY_KEY_PASSWORD; do
+            if [[ -z "${!secret_name:-}" ]]; then
+              echo "::error::Missing required secret: ${secret_name}"
+              missing_secret=true
+            fi
+          done
+
+          if [[ "$missing_secret" == "true" ]]; then
+            exit 1
+          fi
+
+      - name: Upload signed deployment
+        shell: bash
+        env:
+          VERSION_NAME: ${{ inputs.version }}
+          ORG_GRADLE_PROJECT_mavenCentralPublishing: "true"
+          ORG_GRADLE_PROJECT_mavenCentralAutomaticPublishing: "false"
+          ORG_GRADLE_PROJECT_signAllPublications: "true"
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_IN_MEMORY_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          ./gradlew --no-daemon --stacktrace \
+            -PVERSION_NAME="$VERSION_NAME" \
+            :braid:publishToMavenCentral \
+            :braid-paging:publishToMavenCentral
+
+      - name: Write upload summary
+        shell: bash
+        env:
+          VERSION_NAME: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          {
+            echo "## Maven Central deployment upload"
+            echo
+            printf -- "- Version: %s\n" "$VERSION_NAME"
+            printf -- "- Commit SHA: %s\n" "$GITHUB_SHA"
+            echo "- Coordinates:"
+            printf -- "  - io.github.k1een:braid:%s\n" "$VERSION_NAME"
+            printf -- "  - io.github.k1een:braid-paging:%s\n" "$VERSION_NAME"
+            echo "- Deployment upload: completed successfully"
+            echo "- Deployment type: user-managed"
+            echo "- Automatic publication: disabled"
+            echo
+            echo "Open Central Portal -> Deployments and wait for validation."
+            echo "Verify both modules, signatures, POM metadata, and dependencies, then click Publish manually."
+            echo "Do not create a Git tag or GitHub Release until both coordinates are published in Maven Central."
+          } >> "$GITHUB_STEP_SUMMARY"
