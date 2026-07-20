@@ -49,6 +49,16 @@ contains these Environment secrets:
 | `SIGNING_IN_MEMORY_KEY_ID` | `ORG_GRADLE_PROJECT_signingInMemoryKeyId` |
 | `SIGNING_IN_MEMORY_KEY_PASSWORD` | `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword` |
 
+`SIGNING_IN_MEMORY_KEY_ID` must contain a Gradle-compatible SHORT PGP key ID:
+exactly eight hexadecimal characters, with no `0x` prefix. Do not use a
+16-character LONG key ID, the full 40-character fingerprint, spaces, or line
+breaks. The key ID is not a secret, but the project's actual value does not
+need to be recorded in this documentation. Check the available SHORT IDs with:
+
+```shell
+gpg --list-secret-keys --keyid-format SHORT
+```
+
 Only the workflow's `upload` job uses the `release` Environment. The `verify`
 job, including every dry run, has no access to these secrets.
 
@@ -103,7 +113,7 @@ default remains a snapshot for local development. Pass a release version
 explicitly:
 
 ```shell
-./gradlew -PVERSION_NAME=0.1.0-alpha01 publishingCheck
+./gradlew -PVERSION_NAME="<version>" publishingCheck
 ```
 
 Before upload, verify that the selected version:
@@ -123,11 +133,11 @@ the manual action. Prepare and upload a release as follows:
 
 1. Confirm the workflow commit is in `main` and CI is green.
 2. Open **Actions -> Release to Maven Central -> Run workflow**.
-3. Start with `version = 0.1.0-alpha01`, `upload = false`, and an empty
+3. Start with `version = <version>`, `upload = false`, and an empty
    `confirmation` value.
 4. Confirm the `verify` job is green and the `upload` job is skipped.
 5. Run the workflow again with the exact same version, `upload = true`, and
-   `confirmation = PUBLISH 0.1.0-alpha01`.
+   `confirmation = PUBLISH <version>`.
 6. Approve the `upload` job if required by the `release` Environment rules.
 7. Wait for the signed user-managed deployment upload to complete.
 8. Open **Central Portal -> Deployments**.
@@ -135,7 +145,8 @@ the manual action. Prepare and upload a release as follows:
 10. Inspect both modules, signatures, POM metadata, and dependency metadata.
 11. Click **Publish** manually only after every validation and inspection passes.
 12. Wait until both coordinates resolve from Maven Central.
-13. Only then create the Git tag and GitHub Release as a separate task.
+13. Only then create the Git tag `v<version>` and GitHub Release as a separate
+    task.
 
 The workflow rejects runs outside `main`, invalid or snapshot versions, an
 incorrect upload confirmation, an existing `v<version>` Git tag, and a version
@@ -153,7 +164,7 @@ activation properties only in the current release shell, then upload both
 module publications with the same explicit version:
 
 ```shell
-./gradlew -PVERSION_NAME=0.1.0-alpha01 \
+./gradlew -PVERSION_NAME="<version>" \
     :braid:publishToMavenCentral \
     :braid-paging:publishToMavenCentral
 ```
@@ -185,6 +196,13 @@ GitHub Releases, README installation coordinates, and badges belong to a
 separate post-publication step; do not create them before Central succeeds.
 
 ## Failure and recovery
+
+If Gradle reports `Could not read PGP secret key` and the cause contains
+`The key ID must be in a valid form`, check the format of
+`SIGNING_IN_MEMORY_KEY_ID` first. Re-running a failed upload job after fixing
+the secret is safe only when signing failed before any Central upload and no
+deployment exists in the Portal. If a deployment already exists, inspect its
+state before deciding whether any upload should be attempted again.
 
 If validation fails before publication:
 
