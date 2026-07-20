@@ -18,3 +18,27 @@ captures/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Local agents and temporary consumers
+.agents/
+.codex/
+.consumer*/
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+keystore.properties
+signing.properties
+secrets.properties
+credentials.properties
+
+# Signing material
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+*private-key*.asc
+*secret-key*.asc
