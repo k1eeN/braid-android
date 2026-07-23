@@ -1,4 +1,20 @@
-# Braid
+<h1>
+  <picture>
+    <source
+      media="(prefers-color-scheme: dark)"
+      srcset="docs/assets/braid-wordmark-dark.svg"
+    />
+    <source
+      media="(prefers-color-scheme: light)"
+      srcset="docs/assets/braid-wordmark-light.svg"
+    />
+    <img
+      src="docs/assets/braid-wordmark-light.svg"
+      alt="Braid"
+      height="56"
+    />
+  </picture>
+</h1>
 
 [![CI](https://github.com/k1eeN/braid-android/actions/workflows/ci.yml/badge.svg)](https://github.com/k1eeN/braid-android/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)

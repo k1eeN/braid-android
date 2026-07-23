@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="330"
+     height="128"
+     viewBox="0 0 330 128"
+     role="img"
+     aria-label="Braid">
+  <g transform="translate(8 8) scale(0.109375)">
+    <defs>
+<linearGradient id="navyGradient" x1="52" y1="24" x2="202" y2="232" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#102A56"/><stop offset="0.52" stop-color="#0B1F42"/><stop offset="1" stop-color="#07162F"/>
+</linearGradient>
+<linearGradient id="ribbonGradient" x1="52" y1="216" x2="153" y2="109" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#4F46E5"/><stop offset="0.55" stop-color="#5B5CE2"/><stop offset="1" stop-color="#6366F1"/>
+</linearGradient><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="20" stdDeviation="24" flood-color="#0B1F42" flood-opacity="0.14"/></filter></defs>
+<rect x="48" y="48" width="928" height="928" rx="220" fill="#FFFFFF" filter="url(#shadow)"/>
+<g transform="translate(179 179) scale(2.60)"><path d="M52 24H154C181 24 200 43 200 68C200 84 192 98 178 108L153 123L129 109L163 89C173 83 178 76 178 68C178 55 168 48 154 48H78V68C78 77 83 83 91 88L118 104L94 119L78 109C61 99 52 85 52 68Z" fill="url(#navyGradient)"/><path d="M160 126L180 138C194 147 202 164 202 184C202 211 181 232 154 232H52V225L80 207H154C169 207 179 198 179 184C179 175 174 167 165 162L136 145Z" fill="url(#navyGradient)"/><path d="M52 216V181C52 162 62 149 78 139L128 109L153 124L94 159C83 166 78 174 78 185V200Z" fill="url(#ribbonGradient)"/></g>
+  </g>
+  <text
+      x="140"
+      y="87"
+      fill="#1F2328"
+      font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif"
+      font-size="68"
+      font-weight="700"
+      letter-spacing="-1.5">Braid</text>
+</svg>
