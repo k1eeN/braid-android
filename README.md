@@ -14,8 +14,18 @@ Braid's first public alpha has been published. The current version is
 and both `braid` and `braid-paging` are available from Maven Central.
 
 The API remains alpha and may have breaking changes before a stable release.
-The library is already being validated through migrations from a real Android
-application.
+The first external consumer validation pass is complete. Three existing
+RecyclerView adapters were migrated using the published Maven Central artifact.
+
+Across these scenarios, 423 lines of custom adapter implementations were
+replaced with 187 lines of Braid configuration and holder state, a 55.8%
+reduction. The pass covered homogeneous and heterogeneous lists, strict
+routing, cross-type transitions, disabled-state recycling, and a holder-owned
+`TextWatcher`.
+
+See the
+[external consumer validation report](docs/consumer-validation.md)
+for the methodology, findings, and limitations.
 
 ## Why Braid
 
@@ -468,10 +478,12 @@ On Windows, use `gradlew.bat` instead of `./gradlew`. CI also assembles both lib
 
 ## Roadmap
 
-- Validate nested-list behavior.
-- Validate state restoration and production integrations.
-- Expand focused examples and documentation.
-- Broaden consumer compatibility testing.
+- Validate nested-list behavior in a separate consumer project.
+- Validate Paging 3 in a separate consumer project.
+- Validate state restoration across configuration and process recreation.
+- Add consumer-facing delegate testing utilities.
+- Expand focused examples, payload coverage, and documentation.
+- Broaden Gradle, AGP, Kotlin, and consumer compatibility testing.
 - Stabilize the API toward later alpha and beta releases.
 
 No release dates are promised while the API remains alpha.
