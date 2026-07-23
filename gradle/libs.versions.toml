@@ -1,6 +1,6 @@
 [versions]
 #noinspection AndroidGradlePluginVersion
-agp = "8.5.2"
+agp = "9.3.0"
 binaryCompatibilityValidator = "0.18.1"
 detekt = "1.23.8"
 dokka = "2.2.0"
