@@ -16,6 +16,10 @@
   </picture>
 </h1>
 
+> [!IMPORTANT]
+> Braid is discontinued and is not recommended for production use.
+> The repository is preserved for reference only. No further releases are planned.
+
 [![CI](https://github.com/k1eeN/braid-android/actions/workflows/ci.yml/badge.svg)](https://github.com/k1eeN/braid-android/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 ![API](https://img.shields.io/badge/API-alpha-orange)
